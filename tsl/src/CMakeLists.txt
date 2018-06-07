@@ -31,6 +31,8 @@ set_target_properties(${TSL_LIBRARY_NAME} PROPERTIES
 target_compile_definitions(${TSL_LIBRARY_NAME} PUBLIC TS_TSL)
 target_compile_definitions(${TSL_LIBRARY_NAME} PUBLIC TS_SUBMODULE)
 
+target_link_libraries(${TSL_LIBRARY_NAME} pq)
+
 install(
   TARGETS ${TSL_LIBRARY_NAME}
   DESTINATION ${PG_PKGLIBDIR})
@@ -44,3 +46,7 @@ add_subdirectory(compression)
 add_subdirectory(continuous_aggs)
 add_subdirectory(nodes)
 add_subdirectory(fdw)
+
+if (NOT ${PG_VERSION} VERSION_LESS "10")
+  add_subdirectory(remote)
+endif ()

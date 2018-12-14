@@ -615,5 +615,10 @@ extern int oid_cmp(const void *p1, const void *p2);
 #define unlikely(x) ((x) != 0)
 #endif
 #endif
+#if PG96
+#define makeDefElemCompat(name, arg, location) makeDefElem(name, arg)
+#else
+#define makeDefElemCompat(name, arg, location) makeDefElem(name, arg, location)
+#endif
 
 #endif /* TIMESCALEDB_COMPAT_H */

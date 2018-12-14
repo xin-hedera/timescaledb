@@ -11,14 +11,15 @@ set(TEST_FILES
 )
 
 set(TEST_FILES_DEBUG
-  bgw_policy.sql
-  bgw_reorder_drop_chunks.sql
-  continuous_aggs.sql
-  continuous_aggs_bgw.sql
-  continuous_aggs_materialize.sql
-  continuous_aggs_multi.sql
-  ddl_hook.sql
-  tsl_tables.sql
+    bgw_policy.sql
+    bgw_reorder_drop_chunks.sql
+    continuous_aggs.sql
+    continuous_aggs_bgw.sql
+    continuous_aggs_materialize.sql
+    continuous_aggs_multi.sql
+    ddl_hook.sql
+    tsl_tables.sql
+    server.sql
 )
 
 set(TEST_TEMPLATES

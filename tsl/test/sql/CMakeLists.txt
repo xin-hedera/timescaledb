@@ -1,13 +1,15 @@
 set(TEST_FILES
-  continuous_aggs_dump.sql
-  continuous_aggs_errors.sql
-  continuous_aggs_usage.sql
-  continuous_aggs_watermark.sql
-  edition.sql
-  gapfill.sql
-  move.sql
-  partialize_finalize.sql
-  reorder.sql
+    continuous_aggs_dump.sql
+    continuous_aggs_errors.sql
+    continuous_aggs_usage.sql
+    continuous_aggs_watermark.sql
+    edition.sql
+    gapfill.sql
+    move.sql
+    reorder.sql
+    partialize_finalize.sql
+    timescaledb_fdw.sql
+    chunk_api.sql
 )
 
 set(TEST_FILES_DEBUG
@@ -20,7 +22,6 @@ set(TEST_FILES_DEBUG
     ddl_hook.sql
     tsl_tables.sql
     server.sql
-    timescaledb_fdw.sql
 )
 
 set(TEST_TEMPLATES
@@ -70,9 +71,13 @@ foreach(TEMPLATE_FILE ${TEST_TEMPLATES})
 endforeach(TEMPLATE_FILE)
 
 if (NOT ${PG_VERSION} VERSION_LESS "10")
-  list(APPEND TEST_FILES
+  list(APPEND TEST_FILES_DEBUG
     remote_connection.sql)
 endif ()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+  list(APPEND TEST_FILES ${TEST_FILES_DEBUG})
+endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 list(SORT TEST_FILES)
 file(REMOVE ${TEST_SCHEDULE})

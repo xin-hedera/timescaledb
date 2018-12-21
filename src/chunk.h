@@ -10,11 +10,13 @@
 #include <access/htup.h>
 #include <access/tupdesc.h>
 #include <utils/hsearch.h>
+#include <foreign/foreign.h>
 
 #include "export.h"
 #include "catalog.h"
 #include "chunk_constraint.h"
 #include "hypertable.h"
+#include "export.h"
 
 #define INVALID_CHUNK_ID 0
 
@@ -80,8 +82,9 @@ typedef struct ChunkScanEntry
 	Chunk *chunk;
 } ChunkScanEntry;
 
-extern Chunk *ts_chunk_create(Hypertable *ht, Point *p, const char *schema, const char *prefix);
 extern TSDLLEXPORT Chunk *ts_chunk_create_stub(int32 id, int16 num_constraints);
+extern Chunk *ts_chunk_create_from_point(Hypertable *ht, Point *p, const char *schema,
+										 const char *prefix);
 extern Chunk *ts_chunk_find(Hyperspace *hs, Point *p);
 extern Chunk **ts_chunk_find_all(Hyperspace *hs, List *dimension_vecs, LOCKMODE lockmode,
 								 unsigned int *num_chunks);
@@ -100,6 +103,7 @@ extern TSDLLEXPORT Chunk *ts_chunk_get_by_id(int32 id, int16 num_constraints,
 											 bool fail_if_not_found);
 extern TSDLLEXPORT Chunk *ts_chunk_get_by_relid(Oid relid, int16 num_constraints,
 												bool fail_if_not_found);
+extern Chunk *ts_chunk_get_by_id(int32 id, int16 num_constraints, bool fail_if_not_found);
 extern bool ts_chunk_exists(const char *schema_name, const char *table_name);
 extern bool ts_chunk_exists_relid(Oid relid);
 
@@ -120,6 +124,9 @@ extern TSDLLEXPORT List *ts_chunk_do_drop_chunks(Oid table_relid, Datum older_th
 												 Oid newer_than_type, bool cascade,
 												 bool cascades_to_materializations,
 												 int32 log_level);
+extern TSDLLEXPORT Chunk *ts_chunk_find_or_create_without_cuts(Hypertable *ht, Hypercube *hc,
+															   const char *schema,
+															   const char *prefix, bool *created);
 
 extern bool TSDLLEXPORT ts_chunk_contains_compressed_data(Chunk *chunk);
 extern TSDLLEXPORT bool ts_chunk_has_associated_compressed_chunk(int32 chunk_id);

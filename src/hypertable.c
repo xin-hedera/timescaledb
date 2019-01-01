@@ -170,7 +170,7 @@ hypertable_formdata_make_tuple(const FormData_hypertable *fd, TupleDesc desc)
 		nulls[AttrNumberGetAttrOffset(Anum_hypertable_replication_factor)] = true;
 	else
 		values[AttrNumberGetAttrOffset(Anum_hypertable_replication_factor)] =
-			Int16GetDatum(fd->compressed_hypertable_id);
+			Int16GetDatum(fd->replication_factor);
 
 	return heap_form_tuple(desc, values, nulls);
 }
@@ -230,8 +230,8 @@ hypertable_formdata_fill(FormData_hypertable *fd, const HeapTuple tuple, const T
 	if (nulls[AttrNumberGetAttrOffset(Anum_hypertable_replication_factor)])
 		fd->replication_factor = INVALID_HYPERTABLE_ID;
 	else
-		fd->replication_factor = DatumGetInt16(
-			values[AttrNumberGetAttrOffset(Anum_hypertable_replication_factor)]);
+		fd->replication_factor =
+			DatumGetInt16(values[AttrNumberGetAttrOffset(Anum_hypertable_replication_factor)]);
 }
 
 static Hypertable *
@@ -910,6 +910,7 @@ hypertable_insert(int32 hypertable_id, Name schema_name, Name table_name,
 
 	/* when creating a hypertable, there is never an associated compressed dual */
 	fd.compressed_hypertable_id = INVALID_HYPERTABLE_ID;
+	fd.replication_factor = replication_factor;
 
 	rel = heap_open(catalog_get_table_id(catalog, HYPERTABLE), RowExclusiveLock);
 	hypertable_insert_relation(rel, &fd);
@@ -2257,4 +2258,31 @@ ts_hypertable_clone_constraints_to_compressed(Hypertable *user_ht, List *constra
 							 Int32GetDatum(user_ht->fd.compressed_hypertable_id));
 	}
 	ts_catalog_restore_user(&sec_ctx);
+}
+
+#define MIN(x, y) (x < y ? x : y)
+
+/*
+ * Assign servers to a chunk.
+ *
+ * A chunk is assigned up to replication_factor number of servers. Assignment
+ * happens similar to tablespaces, i.e., based on dimension type.
+ */
+List *
+ts_hypertable_assign_chunk_servers(Hypertable *ht, Hypercube *cube)
+{
+	List *chunk_servers = NIL;
+	int num_assigned = MIN(ht->fd.replication_factor, list_length(ht->servers));
+	int n, i;
+
+	n = hypertable_get_chunk_slice_ordinal(ht, cube);
+
+	for (i = 0; i < num_assigned; i++)
+	{
+		int j = (n + i) % list_length(ht->servers);
+
+		chunk_servers = lappend(chunk_servers, list_nth(ht->servers, j));
+	}
+
+	return chunk_servers;
 }

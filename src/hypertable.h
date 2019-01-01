@@ -78,14 +78,10 @@ typedef enum HypertableCreateFlags
 
 /* Alias for no replication (regular hypertable) */
 #define REPLICATION_NONE 0
-extern TSDLLEXPORT bool ts_hypertable_create_from_info(Oid table_relid, int32 hypertable_id,
-													   uint32 flags, DimensionInfo *time_dim_info,
-													   DimensionInfo *space_dim_info,
-													   Name associated_schema_name,
-													   Name associated_table_prefix,
-													   ChunkSizingInfo *chunk_sizing_info, 
-													   int32 replication_factor, 
-													   ArrayType *servers);
+extern TSDLLEXPORT bool ts_hypertable_create_from_info(
+	Oid table_relid, int32 hypertable_id, uint32 flags, DimensionInfo *time_dim_info,
+	DimensionInfo *space_dim_info, Name associated_schema_name, Name associated_table_prefix,
+	ChunkSizingInfo *chunk_sizing_info, int32 replication_factor, ArrayType *servers);
 extern TSDLLEXPORT bool ts_hypertable_create_compressed(Oid table_relid, int32 hypertable_id);
 
 extern TSDLLEXPORT Hypertable *ts_hypertable_get_by_id(int32 hypertable_id);
@@ -132,6 +128,7 @@ extern TSDLLEXPORT bool ts_hypertable_set_compressed_id(Hypertable *ht,
 extern TSDLLEXPORT bool ts_hypertable_unset_compressed_id(Hypertable *ht);
 extern TSDLLEXPORT void ts_hypertable_clone_constraints_to_compressed(Hypertable *ht,
 																	  List *constraint_list);
+extern List *ts_hypertable_assign_chunk_servers(Hypertable *ht, Hypercube *cube);
 
 #define hypertable_scan(schema, table, tuple_found, data, lockmode, tuplock)                       \
 	ts_hypertable_scan_with_memory_context(schema,                                                 \

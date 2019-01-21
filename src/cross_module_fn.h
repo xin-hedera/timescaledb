@@ -109,6 +109,10 @@ typedef struct CrossModuleFunctions
 	PGFunction timescaledb_fdw_handler;
 	PGFunction timescaledb_fdw_validator;
 	void (*cache_syscache_invalidate)(Datum arg, int cacheid, uint32 hashvalue);
+#if !PG96
+	Datum (*remote_txn_id_in)(PG_FUNCTION_ARGS);
+	Datum (*remote_txn_id_out)(PG_FUNCTION_ARGS);
+#endif
 } CrossModuleFunctions;
 
 extern TSDLLEXPORT CrossModuleFunctions *ts_cm_functions;

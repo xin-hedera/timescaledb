@@ -592,6 +592,7 @@ ts_chunk_add_constraints(Chunk *chunk)
 															   chunk->cube);
 	num_added += ts_chunk_constraints_add_inheritable_constraints(chunk->constraints,
 																  chunk->fd.id,
+																  chunk->relkind,
 																  chunk->hypertable_relid);
 
 	return num_added;

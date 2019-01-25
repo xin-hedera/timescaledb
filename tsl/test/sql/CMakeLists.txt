@@ -69,8 +69,8 @@ endforeach(TEMPLATE_FILE)
 
 if (NOT ${PG_VERSION} VERSION_LESS "10")
   list(APPEND TEST_FILES
-    hypertable_distributed.sql
     chunk_api.sql
+    hypertable_distributed.sql
     timescaledb_fdw.sql
   )
   list(APPEND TEST_FILES_DEBUG
@@ -79,7 +79,6 @@ if (NOT ${PG_VERSION} VERSION_LESS "10")
     remote_txn.sql
     remote_txn_id.sql
     server.sql
-    timescaledb_fdw.sql
     dist_commands.sql
   )
 endif ()

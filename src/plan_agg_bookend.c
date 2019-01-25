@@ -222,7 +222,7 @@ contains_first_last_node(List *sortClause, List *targetList)
  *  - generate FirstLastAggInfo that wraps MinMaxAggInfo
  *  - generate subquery (path) for FIRST/LAST (we reuse MinMaxAggPath)
  *  - replace Aggref node with Param node
- * 	- reject ORDER BY on FIRST/LAST
+ *	- reject ORDER BY on FIRST/LAST
  */
 void
 ts_preprocess_first_last_aggregates(PlannerInfo *root, List *tlist)
@@ -531,7 +531,7 @@ find_first_last_aggs_walker(Node *node, List **context)
  *		Given a FIRST/LAST aggregate, try to build an indexscan Path it can be
  *		optimized with.
  *		We will generate subquery with value and sort target, where we
- * 	    SELECT value and we ORDER BY sort.
+ *		SELECT value and we ORDER BY sort.
  *
  * If successful, stash the best path in *mminfo and return TRUE.
  * Otherwise, return FALSE.

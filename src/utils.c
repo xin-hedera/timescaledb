@@ -636,3 +636,29 @@ ts_get_appendrelinfo(PlannerInfo *root, Index rti)
 			(errcode(ERRCODE_INTERNAL_ERROR), errmsg("no appendrelinfo found for index %d", rti)));
 	pg_unreachable();
 }
+
+/**
+ * Processes constraints that belong to a given relation
+ */
+void
+ts_process_constraints(Oid relid, ProcessConstraint process_func, void *ctx)
+{
+	ScanKeyData skey;
+	Relation rel;
+	SysScanDesc scan;
+	HeapTuple htup;
+
+	ScanKeyInit(&skey, Anum_pg_constraint_conrelid, BTEqualStrategyNumber, F_OIDEQ, relid);
+
+	rel = heap_open(ConstraintRelationId, AccessShareLock);
+	scan = systable_beginscan(rel, ConstraintRelidTypidNameIndexId, true, NULL, 1, &skey);
+
+	while (HeapTupleIsValid(htup = systable_getnext(scan)))
+	{
+		if (!process_func(htup, ctx))
+			break;
+	}
+
+	systable_endscan(scan);
+	heap_close(rel, AccessShareLock);
+}

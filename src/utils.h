@@ -10,6 +10,7 @@
 #include <fmgr.h>
 #include <access/htup_details.h>
 #include <catalog/pg_proc.h>
+#include <catalog/pg_constraint.h>
 #include <nodes/primnodes.h>
 #include <nodes/relation.h>
 #include <utils/datetime.h>
@@ -83,6 +84,10 @@ extern void *ts_create_struct_from_tuple(HeapTuple tuple, MemoryContext mctx, si
 										 size_t copy_size);
 
 extern TSDLLEXPORT AppendRelInfo *ts_get_appendrelinfo(PlannerInfo *root, Index rti);
+
+typedef bool (*ProcessConstraint)(HeapTuple constraint_tuple, void *ctx);
+extern TSDLLEXPORT void ts_process_constraints(Oid relid, ProcessConstraint process_func,
+											   void *ctx);
 
 #define STRUCT_FROM_TUPLE(tuple, mctx, to_type, form_type)                                         \
 	(to_type *) ts_create_struct_from_tuple(tuple, mctx, sizeof(to_type), sizeof(form_type));

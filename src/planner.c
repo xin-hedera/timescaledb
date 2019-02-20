@@ -343,6 +343,14 @@ timescaledb_set_rel_pathlist_query(PlannerInfo *root, RelOptInfo *rel, Index rti
 	if (!should_optimize_query(ht))
 		return;
 
+	if (ts_cm_functions->set_rel_pathlist != NULL)
+		ts_cm_functions->set_rel_pathlist(root, rel, rti, rte);
+
+	/* quick abort if only optimizing hypertables */
+	if (!ts_guc_optimize_non_hypertables &&
+		!(is_append_parent(rel, rte) || is_append_child(rel, rte)))
+		return;
+
 	/*
 	 * Since the sort optimization adds new paths to the rel it has
 	 * to happen before any optimizations that replace pathlist.
@@ -435,6 +443,9 @@ timescaledb_set_rel_pathlist(PlannerInfo *root, RelOptInfo *rel, Index rti, Rang
 
 	if (!ts_extension_is_loaded() || IS_DUMMY_REL(rel) || !OidIsValid(rte->relid))
 		return;
+
+	if (ts_cm_functions->set_rel_pathlist != NULL)
+		ts_cm_functions->set_rel_pathlist(root, rel, rti, rte);
 
 	/* do we have a DML transformation here */
 	is_htdml = is_hypertable_chunk_dml(root, rel, rti, rte);

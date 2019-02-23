@@ -806,15 +806,7 @@ NOTICE:  adding not-null constraint to column "time Col %#^#@$#"
              4 | Table\\Schema | Param_Table | t
 (1 row)
 
--- Test assign_server
-SET ROLE :ROLE_SUPERUSER;
-CREATE OR REPLACE FUNCTION assign_server(
-	hypertable REGCLASS,
-	server     NAME
-)
-RETURNS void
-AS :TSL_MODULE_PATHNAME, 'tsl_test_assign_server' LANGUAGE C;
-SET ROLE :ROLE_DEFAULT_CLUSTER_USER;
+-- Test attach_server
 SELECT * FROM _timescaledb_catalog.hypertable_server;
  hypertable_id | server_hypertable_id | server_name 
 ---------------+----------------------+-------------
@@ -828,10 +820,10 @@ SELECT * FROM _timescaledb_catalog.hypertable_server;
              4 |                    3 | server_3
 (8 rows)
 
-SELECT * FROM assign_server('"Table\\Schema"."Param_Table"', 'server_1');
- assign_server 
----------------
- 
+SELECT * FROM attach_server('"Table\\Schema"."Param_Table"', 'server_1');
+ hypertable_id | server_hypertable_id | server_name 
+---------------+----------------------+-------------
+             4 |                    3 | server_1
 (1 row)
 
 SELECT * FROM _timescaledb_catalog.hypertable_server;
@@ -850,11 +842,11 @@ SELECT * FROM _timescaledb_catalog.hypertable_server;
 
 -- Verify hypertables on all servers
 SELECT * FROM _timescaledb_catalog.hypertable;
- id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | replication_factor 
-----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+--------------------
-  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                  1
-  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                  4
-  4 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                  2
+ id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | compressed | compressed_hypertable_id | replication_factor 
+----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+------------+--------------------------+--------------------
+  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                  1
+  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                  4
+  4 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                  2
 (3 rows)
 
 SELECT * FROM _timescaledb_catalog.dimension;
@@ -874,11 +866,11 @@ SELECT * FROM test.show_triggers('"Table\\Schema"."Param_Table"');
 
 \c server_1
 SELECT * FROM _timescaledb_catalog.hypertable;
- id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | replication_factor 
-----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+--------------------
-  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
+ id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | compressed | compressed_hypertable_id | replication_factor 
+----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+------------+--------------------------+--------------------
+  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
 (3 rows)
 
 SELECT * FROM _timescaledb_catalog.dimension;
@@ -899,11 +891,11 @@ FROM pg_trigger t, pg_class c WHERE c.relname = 'Param_Table' AND t.tgrelid = c.
 
 \c server_2
 SELECT * FROM _timescaledb_catalog.hypertable;
- id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | replication_factor 
-----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+--------------------
-  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
+ id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | compressed | compressed_hypertable_id | replication_factor 
+----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+------------+--------------------------+--------------------
+  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
 (3 rows)
 
 SELECT * FROM _timescaledb_catalog.dimension;
@@ -924,11 +916,11 @@ FROM pg_trigger t, pg_class c WHERE c.relname = 'Param_Table' AND t.tgrelid = c.
 
 \c server_3
 SELECT * FROM _timescaledb_catalog.hypertable;
- id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | replication_factor 
-----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+--------------------
-  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
-  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 |                   
+ id |  schema_name  |   table_name    | associated_schema_name | associated_table_prefix | num_dimensions | chunk_sizing_func_schema |  chunk_sizing_func_name  | chunk_target_size | compressed | compressed_hypertable_id | replication_factor 
+----+---------------+-----------------+------------------------+-------------------------+----------------+--------------------------+--------------------------+-------------------+------------+--------------------------+--------------------
+  1 | public        | disttable       | _timescaledb_internal  | _hyper_1                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  2 | public        | underreplicated | _timescaledb_internal  | _hyper_2                |              1 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
+  3 | Table\\Schema | Param_Table     | T3sTSch                | test*pre_               |              2 | _timescaledb_internal    | calculate_chunk_interval |                 0 | f          |                          |                   
 (3 rows)
 
 SELECT * FROM _timescaledb_catalog.dimension;
@@ -972,61 +964,61 @@ SELECT * FROM add_dimension('dimented_table', 'column3', 4, partitioning_func =>
 (1 row)
 
 SELECT * FROM _timescaledb_catalog.dimension;
- id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length 
-----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------
-  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  4 |             4 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000
-  5 |             4 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  6 |             5 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  7 |             5 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  8 |             5 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000
-  9 |             5 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                
+ id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length | integer_now_func_schema | integer_now_func 
+----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------+-------------------------+------------------
+  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  4 |             4 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  5 |             4 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  6 |             5 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  7 |             5 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  8 |             5 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  9 |             5 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                 |                         | 
 (8 rows)
 
-SELECT * FROM assign_server('dimented_table', 'server_2');
- assign_server 
----------------
- 
+SELECT * FROM attach_server('dimented_table', 'server_2');
+ hypertable_id | server_hypertable_id | server_name 
+---------------+----------------------+-------------
+             5 |                    4 | server_2
 (1 row)
 
 SELECT * FROM _timescaledb_catalog.dimension;
- id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length 
-----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------
-  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  4 |             4 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000
-  5 |             4 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  6 |             5 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  7 |             5 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  8 |             5 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000
-  9 |             5 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                
+ id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length | integer_now_func_schema | integer_now_func 
+----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------+-------------------------+------------------
+  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  4 |             4 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  5 |             4 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  6 |             5 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  7 |             5 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  8 |             5 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  9 |             5 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                 |                         | 
 (8 rows)
 
 \c server_1
 -- Note that this didn't get the add_dimension
 SELECT * FROM _timescaledb_catalog.dimension;
- id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema | partitioning_func  | interval_length 
-----+---------------+------------------+--------------------------+---------+------------+--------------------------+--------------------+-----------------
-  1 |             1 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000
-  2 |             2 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000
-  3 |             3 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                    |    604800000000
-  4 |             3 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash |                
-  5 |             4 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000
-  6 |             4 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash |                
+ id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema | partitioning_func  | interval_length | integer_now_func_schema | integer_now_func 
+----+---------------+------------------+--------------------------+---------+------------+--------------------------+--------------------+-----------------+-------------------------+------------------
+  1 |             1 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000 |                         | 
+  2 |             2 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000 |                         | 
+  3 |             3 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                    |    604800000000 |                         | 
+  4 |             3 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash |                 |                         | 
+  5 |             4 | time             | timestamp with time zone | t       |            |                          |                    |    604800000000 |                         | 
+  6 |             4 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash |                 |                         | 
 (6 rows)
 
 \c server_2
 SELECT * FROM _timescaledb_catalog.dimension;
- id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length 
-----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------
-  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  3 |             3 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000
-  4 |             3 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  5 |             4 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000
-  6 |             4 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                
-  7 |             4 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000
-  8 |             4 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                
+ id | hypertable_id |   column_name    |       column_type        | aligned | num_slices | partitioning_func_schema |   partitioning_func   | interval_length | integer_now_func_schema | integer_now_func 
+----+---------------+------------------+--------------------------+---------+------------+--------------------------+-----------------------+-----------------+-------------------------+------------------
+  1 |             1 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  2 |             2 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  3 |             3 | time Col %#^#@$# | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  4 |             3 | __region         | text                     | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  5 |             4 | time             | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  6 |             4 | column1          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_hash    |                 |                         | 
+  7 |             4 | column2          | timestamp with time zone | t       |            |                          |                       |    604800000000 |                         | 
+  8 |             4 | column3          | integer                  | f       |          4 | _timescaledb_internal    | get_partition_for_key |                 |                         | 
 (8 rows)
 

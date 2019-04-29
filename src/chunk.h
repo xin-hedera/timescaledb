@@ -143,6 +143,8 @@ extern List *ts_chunk_servers_copy(Chunk *chunk);
 extern bool TSDLLEXPORT ts_chunk_contains_compressed_data(Chunk *chunk);
 extern TSDLLEXPORT bool ts_chunk_has_associated_compressed_chunk(int32 chunk_id);
 
+extern TSDLLEXPORT List *ts_chunk_find_chunk_ids_by_hypertable_id(int32 hypertable_id);
+
 #define chunk_get_by_name(schema_name, table_name, num_constraints, fail_if_not_found)             \
 	ts_chunk_get_by_name_with_memory_context(schema_name,                                          \
 											 table_name,                                           \

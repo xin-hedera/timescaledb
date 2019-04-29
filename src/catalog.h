@@ -199,7 +199,7 @@ enum Anum_hypertable_server_hypertable_id_server_name_idx
 
 struct FormData_hypertable_server_hypertable_id_server_name_idx
 {
-	int32 chunk_id;
+	int32 hypertable_id;
 	NameData server_name;
 };
 
@@ -212,7 +212,7 @@ enum Anum_hypertable_server_server_hypertable_id_server_name_idx
 
 struct FormData_hypertable_server_server_hypertable_id_server_name_idx
 {
-	int32 server_chunk_id;
+	int32 server_hypertable_id;
 	NameData server_name;
 };
 

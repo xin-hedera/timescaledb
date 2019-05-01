@@ -133,24 +133,24 @@ SELECT * FROM "+ri(k33_')";
 (18 rows)
 
 SELECT * FROM _timescaledb_catalog.chunk;
- id | hypertable_id |      schema_name      |       table_name       
-----+---------------+-----------------------+------------------------
-  1 |             1 | _timescaledb_internal | _hyper_1_1_dist_chunk
-  2 |             1 | _timescaledb_internal | _hyper_1_2_dist_chunk
-  3 |             1 | _timescaledb_internal | _hyper_1_3_dist_chunk
-  4 |             1 | _timescaledb_internal | _hyper_1_4_dist_chunk
-  5 |             1 | _timescaledb_internal | _hyper_1_5_dist_chunk
-  6 |             1 | _timescaledb_internal | _hyper_1_6_dist_chunk
-  7 |             1 | _timescaledb_internal | _hyper_1_7_dist_chunk
-  8 |             1 | _timescaledb_internal | _hyper_1_8_dist_chunk
- 12 |             1 | _timescaledb_internal | _hyper_1_12_dist_chunk
- 13 |             1 | _timescaledb_internal | _hyper_1_13_dist_chunk
- 14 |             1 | _timescaledb_internal | _hyper_1_14_dist_chunk
- 15 |             1 | _timescaledb_internal | _hyper_1_15_dist_chunk
- 16 |             1 | _timescaledb_internal | _hyper_1_16_dist_chunk
- 17 |             1 | _timescaledb_internal | _hyper_1_17_dist_chunk
- 18 |             1 | _timescaledb_internal | _hyper_1_18_dist_chunk
- 19 |             1 | _timescaledb_internal | _hyper_1_19_dist_chunk
+ id | hypertable_id |      schema_name      |       table_name       | compressed_chunk_id 
+----+---------------+-----------------------+------------------------+---------------------
+  1 |             1 | _timescaledb_internal | _hyper_1_1_dist_chunk  |                    
+  2 |             1 | _timescaledb_internal | _hyper_1_2_dist_chunk  |                    
+  3 |             1 | _timescaledb_internal | _hyper_1_3_dist_chunk  |                    
+  4 |             1 | _timescaledb_internal | _hyper_1_4_dist_chunk  |                    
+  5 |             1 | _timescaledb_internal | _hyper_1_5_dist_chunk  |                    
+  6 |             1 | _timescaledb_internal | _hyper_1_6_dist_chunk  |                    
+  7 |             1 | _timescaledb_internal | _hyper_1_7_dist_chunk  |                    
+  8 |             1 | _timescaledb_internal | _hyper_1_8_dist_chunk  |                    
+ 12 |             1 | _timescaledb_internal | _hyper_1_12_dist_chunk |                    
+ 13 |             1 | _timescaledb_internal | _hyper_1_13_dist_chunk |                    
+ 14 |             1 | _timescaledb_internal | _hyper_1_14_dist_chunk |                    
+ 15 |             1 | _timescaledb_internal | _hyper_1_15_dist_chunk |                    
+ 16 |             1 | _timescaledb_internal | _hyper_1_16_dist_chunk |                    
+ 17 |             1 | _timescaledb_internal | _hyper_1_17_dist_chunk |                    
+ 18 |             1 | _timescaledb_internal | _hyper_1_18_dist_chunk |                    
+ 19 |             1 | _timescaledb_internal | _hyper_1_19_dist_chunk |                    
 (16 rows)
 
 SELECT * FROM _timescaledb_catalog.chunk_server;

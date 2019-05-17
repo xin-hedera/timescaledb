@@ -411,6 +411,7 @@ table_size     | 16 kB
 index_size     | 48 kB
 toast_size     | 32 kB
 total_size     | 96 kB
+distributed    | f
 -[ RECORD 2 ]--+------------------
 table_schema   | public
 table_name     | foo
@@ -421,6 +422,7 @@ table_size     | 32 kB
 index_size     | 144 kB
 toast_size     | 8192 bytes
 total_size     | 184 kB
+distributed    | f
 
 \x
 select decompress_chunk(ch1.schema_name|| '.' || ch1.table_name)

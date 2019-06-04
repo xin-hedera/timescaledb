@@ -99,7 +99,7 @@ extern List *ts_chunk_find_all_oids(Hyperspace *hs, List *dimension_vecs, LOCKMO
 extern TSDLLEXPORT int ts_chunk_add_constraints(Chunk *chunk);
 
 extern Chunk *ts_chunk_copy(Chunk *chunk);
-extern Chunk *ts_chunk_get_by_name_with_memory_context(const char *schema_name,
+extern TSDLLEXPORT Chunk *ts_chunk_get_by_name_with_memory_context(const char *schema_name,
 													   const char *table_name,
 													   int16 num_constraints, MemoryContext mctx,
 													   bool fail_if_not_found);

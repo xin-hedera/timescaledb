@@ -169,6 +169,7 @@ extern void ts_dimensions_rename_schema_name(char *oldname, char *newname);
 extern TSDLLEXPORT void dimension_update(Oid table_relid, Name dimname, DimensionType dimtype,
 										 Datum *interval, Oid *intervaltype, int16 *num_slices,
 										 Oid *integer_now_func);
+extern TSDLLEXPORT List *ts_dimension_get_partexprs(Dimension *dim, Index hyper_varno);
 
 #define hyperspace_get_open_dimension(space, i)                                                    \
 	ts_hyperspace_get_dimension(space, DIMENSION_TYPE_OPEN, i)

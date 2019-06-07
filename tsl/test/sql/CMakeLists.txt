@@ -74,6 +74,7 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     timescaledb_fdw.sql
     partitionwise_distributed.sql
     hypertable_distributed.sql
+    ddl_distributed.sql
     )
 endif ()
 

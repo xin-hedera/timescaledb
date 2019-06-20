@@ -619,6 +619,7 @@ timescale_create_upper_paths_hook(PlannerInfo *root, UpperRelationKind stage, Re
 								  RelOptInfo *output_rel)
 {
 	Query *parse = root->parse;
+	void *extra = NULL;
 
 	if (prev_create_upper_paths_hook != NULL)
 		prev_create_upper_paths_hook(root, stage, input_rel, output_rel);
@@ -636,7 +637,7 @@ timescale_create_upper_paths_hook(PlannerInfo *root, UpperRelationKind stage, Re
 		return;
 
 	if (ts_cm_functions->create_upper_paths_hook != NULL)
-		ts_cm_functions->create_upper_paths_hook(root, stage, input_rel, output_rel);
+		ts_cm_functions->create_upper_paths_hook(root, stage, input_rel, output_rel, extra);
 
 	if (output_rel != NULL)
 	{

@@ -100,9 +100,10 @@ extern TSDLLEXPORT int ts_chunk_add_constraints(Chunk *chunk);
 
 extern Chunk *ts_chunk_copy(Chunk *chunk);
 extern TSDLLEXPORT Chunk *ts_chunk_get_by_name_with_memory_context(const char *schema_name,
-													   const char *table_name,
-													   int16 num_constraints, MemoryContext mctx,
-													   bool fail_if_not_found);
+																   const char *table_name,
+																   int16 num_constraints,
+																   MemoryContext mctx,
+																   bool fail_if_not_found);
 extern TSDLLEXPORT void ts_chunk_insert_lock(Chunk *chunk, LOCKMODE lock);
 
 extern TSDLLEXPORT Oid ts_chunk_create_table(Chunk *chunk, Hypertable *ht, char *tablespacename);

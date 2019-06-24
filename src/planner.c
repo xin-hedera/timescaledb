@@ -520,7 +520,7 @@ timescaledb_get_relation_info_hook(PlannerInfo *root, Oid relation_objectid, boo
 		TimescaleDBPrivate *priv = palloc0(sizeof(TimescaleDBPrivate));
 
 		Assert(ht != NULL);
-		
+
 		Assert(rel->fdw_private == NULL);
 		rel->fdw_private = priv;
 

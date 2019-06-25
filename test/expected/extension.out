@@ -61,5 +61,5 @@ ORDER BY proname;
  timescaledb_fdw_validator
  timescaledb_post_restore
  timescaledb_pre_restore
-(45 rows)
+(47 rows)
 

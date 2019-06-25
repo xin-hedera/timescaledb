@@ -49,10 +49,10 @@ typedef struct Chunk
 	ChunkConstraints *constraints;
 
 	/*
-	 * The servers that hold a copy of the chunk. NIL for non-distributed
+	 * The data nodes that hold a copy of the chunk. NIL for non-distributed
 	 * hypertables.
 	 */
-	List *servers;
+	List *data_nodes;
 } Chunk;
 
 /*
@@ -139,7 +139,7 @@ extern TSDLLEXPORT Chunk *ts_chunk_find_or_create_without_cuts(Hypertable *ht, H
 															   const char *schema_name,
 															   const char *table_name,
 															   bool *created);
-extern List *ts_chunk_servers_copy(Chunk *chunk);
+extern List *ts_chunk_data_nodes_copy(Chunk *chunk);
 
 extern bool TSDLLEXPORT ts_chunk_contains_compressed_data(Chunk *chunk);
 extern TSDLLEXPORT bool ts_chunk_has_associated_compressed_chunk(int32 chunk_id);

@@ -32,6 +32,9 @@
 #include "continuous_aggs/materialize.h"
 #include "continuous_aggs/options.h"
 #include "nodes/decompress_chunk/planner.h"
+#include "compat.h"
+
+#if PG11_GE
 #include "process_utility.h"
 #include "hypertable.h"
 #include "compression/create.h"
@@ -41,9 +44,6 @@
 #include "fdw/timescaledb_fdw.h"
 #include "chunk_api.h"
 #include "hypertable.h"
-#include "compat.h"
-
-#if !PG96
 #include "remote/connection_cache.h"
 #include "remote/dist_txn.h"
 #include "remote/txn_id.h"
@@ -76,12 +76,12 @@ cache_syscache_invalidate(Datum arg, int cacheid, uint32 hashvalue)
 	 * the future see `postgres_fdw` connection management for an example. For
 	 * now, invalidate the entire cache.
 	 */
-#if !PG96
+#if PG11_GE
 	remote_connection_cache_invalidate_callback();
 #endif
 }
 
-#if PG96
+#if PG96 || PG10
 
 static Datum
 empty_fn(PG_FUNCTION_ARGS)
@@ -96,7 +96,7 @@ error_not_supported(void)
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 			 errmsg("function is not supported under the current PostgreSQL version %s",
 					PG_VERSION_STR),
-			 errhint("Upgrade PostgreSQL to version 10 or greater.")));
+			 errhint("Upgrade PostgreSQL to version 11 or greater.")));
 	pg_unreachable();
 }
 
@@ -108,7 +108,7 @@ error_not_supported_default_fn(PG_FUNCTION_ARGS)
 			 errmsg("function \"%s\" is not supported under the current PostgreSQL version %s",
 					get_func_name(fcinfo->flinfo->fn_oid),
 					PG_VERSION_STR),
-			 errhint("Upgrade PostgreSQL to version 10 or greater.")));
+			 errhint("Upgrade PostgreSQL to version 11 or greater.")));
 	pg_unreachable();
 }
 
@@ -156,7 +156,7 @@ error_server_set_block_new_chunks_not_supported(PG_FUNCTION_ARGS, bool block)
 	pg_unreachable();
 }
 
-#endif /* PG96 */
+#endif /* PG96 || PG10 */
 
 /*
  * Cross module function initialization.
@@ -221,7 +221,7 @@ CrossModuleFunctions tsl_cm_functions = {
 	.process_compress_table = tsl_process_compress_table,
 	.compress_chunk = tsl_compress_chunk,
 	.decompress_chunk = tsl_decompress_chunk,
-#if PG96
+#if PG96 || PG10
 	.add_server = error_not_supported_default_fn,
 	.delete_server = error_not_supported_default_fn,
 	.attach_server = error_not_supported_default_fn,
@@ -290,7 +290,7 @@ ts_module_init(PG_FUNCTION_ARGS)
 
 	_continuous_aggs_cache_inval_init();
 	_decompress_chunk_init();
-#if !PG96
+#if PG11_GE
 	_remote_connection_cache_init();
 	_remote_dist_txn_init();
 	_tsl_process_utility_init();
@@ -312,7 +312,7 @@ module_shutdown(void)
 	 * Order of items should be strict reverse order of ts_module_init. Please
 	 * document any exceptions.
 	 */
-#if !PG96
+#if PG11_GE
 	_remote_dist_txn_fini();
 	_remote_connection_cache_fini();
 	_tsl_process_utility_fini();

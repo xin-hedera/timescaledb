@@ -14,9 +14,11 @@
 #include "interval.h"
 
 extern Datum hypertable_valid_ts_interval(PG_FUNCTION_ARGS);
-extern void hypertable_make_distributed(Hypertable *ht, ArrayType *servers);
 
+#if PG11_GE
+extern void hypertable_make_distributed(Hypertable *ht, ArrayType *servers);
 List *hypertable_assign_servers(int32 hypertable_id, List *servers);
 extern List *hypertable_server_array_to_list(ArrayType *serverarr);
+#endif /*  PG11_GE */
 
 #endif /* _TIMESCALEDB_TSL_HYPERTABLE_H */

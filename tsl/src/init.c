@@ -40,8 +40,9 @@
 #include "compression/create.h"
 #include "compression/compress_utils.h"
 #include "compression/segment_meta.h"
-#include "fdw/fdw.h"
 #include "data_node.h"
+#include "chunk.h"
+#include "fdw/fdw.h"
 #include "chunk_api.h"
 #include "remote/connection_cache.h"
 #include "remote/dist_txn.h"
@@ -244,7 +245,7 @@ CrossModuleFunctions tsl_cm_functions = {
 	.data_node_ping = data_node_ping,
 	.detach_data_node = data_node_detach,
 	.data_node_set_block_new_chunks = data_node_set_block_new_chunks,
-	.set_chunk_default_data_node = data_node_set_chunk_default_data_node,
+	.set_chunk_default_data_node = chunk_set_default_data_node,
 	.show_chunk = chunk_show,
 	.create_chunk = chunk_create,
 	.create_chunk_on_data_nodes = chunk_api_create_on_data_nodes,

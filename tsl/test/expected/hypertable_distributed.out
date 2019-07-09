@@ -1291,8 +1291,8 @@ WHERE h.id = hdn.hypertable_id
 AND h.table_name = 'Param_Table';
  table_name  |  node_name  
 -------------+-------------
- Param_Table | data_node_3
  Param_Table | data_node_1
+ Param_Table | data_node_3
 (2 rows)
 
 -- Attach another data node but do not auto-repartition, i.e.,

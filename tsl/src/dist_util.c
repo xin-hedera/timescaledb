@@ -15,6 +15,8 @@
 #include <utils/fmgrprotos.h>
 #include "remote/dist_commands.h"
 #include "funcapi.h"
+#include <access/twophase.h>
+#include <miscadmin.h>
 
 /*
  * When added to a distributed database, this key in the metadata table will be set to match the
@@ -142,7 +144,6 @@ dist_util_is_frontend_session(void)
 	return uuid_matches(UUIDPGetDatum(peer_dist_id), dist_id);
 }
 
-#if !PG96
 Datum
 dist_util_remote_hypertable_info(PG_FUNCTION_ARGS)
 {
@@ -206,4 +207,9 @@ dist_util_remote_hypertable_info(PG_FUNCTION_ARGS)
 	ts_dist_cmd_close_response(funcctx->user_fctx);
 	SRF_RETURN_DONE(funcctx);
 }
-#endif
+
+bool
+validate_data_node_settings()
+{
+	return MaxConnections > 0 && max_prepared_xacts >= MaxConnections;
+}

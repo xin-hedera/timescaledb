@@ -275,6 +275,25 @@ process_add_hypertable(ProcessUtilityArgs *args, Hypertable *ht)
 }
 
 static void
+process_create_foreign_table_start(ProcessUtilityArgs *args)
+{
+	CreateForeignTableStmt *stmt = (CreateForeignTableStmt *) args->parsetree;
+	ForeignServer *server = GetForeignServerByName(stmt->servername, true);
+
+	if (NULL != server)
+	{
+		ForeignDataWrapper *fdw = GetForeignDataWrapperByName(EXTENSION_FDW_NAME, false);
+
+		if (fdw->fdwid == server->fdwid)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("timescaledb foreign tables must be chunks"),
+					 errdetail("It is not possible to create stand-alone foreign "
+							   "tables using the timescaledb foreign data wrapper.")));
+	}
+}
+
+static void
 process_altertableschema(ProcessUtilityArgs *args)
 {
 	AlterObjectSchemaStmt *alterstmt = (AlterObjectSchemaStmt *) args->parsetree;
@@ -3036,6 +3055,9 @@ process_ddl_command_start(ProcessUtilityArgs *args)
 
 	switch (nodeTag(args->parsetree))
 	{
+		case T_CreateForeignTableStmt:
+			process_create_foreign_table_start(args);
+			break;
 		case T_AlterObjectSchemaStmt:
 			process_alterobjectschema(args);
 			break;

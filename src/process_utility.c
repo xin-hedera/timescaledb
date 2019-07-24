@@ -642,11 +642,10 @@ process_truncate(ProcessUtilityArgs *args)
 	TruncateStmt *stmt = (TruncateStmt *) args->parsetree;
 	Cache *hcache = ts_hypertable_cache_pin();
 	ListCell *cell;
+	List *hypertables = NIL;
+	List *relations = NIL;
 
-	/* Call standard process utility first to truncate all tables */
-	prev_ProcessUtility(args);
-
-	/* For all hypertables, we drop the now empty chunks */
+	/* Preprocess and filter out distributed hypertables */
 	foreach (cell, stmt->relations)
 	{
 		RangeVar *rv = lfirst(cell);
@@ -655,7 +654,9 @@ process_truncate(ProcessUtilityArgs *args)
 		if (NULL == rv)
 			continue;
 
-		relid = RangeVarGetRelid(rv, NoLock, true);
+		/* Grab AccessExclusiveLock, same as regular TRUNCATE processing grabs
+		 * below. We just do it preemptively here. */
+		relid = RangeVarGetRelid(rv, AccessExclusiveLock, true);
 
 		if (OidIsValid(relid))
 		{
@@ -691,15 +692,41 @@ process_truncate(ProcessUtilityArgs *args)
 							 errhint("Do not specify the ONLY keyword, or use truncate"
 									 " only on the chunks directly.")));
 
-				process_add_hypertable(args, ht);
+				hypertables = lappend(hypertables, ht);
 
-				/* Delete the metadata */
-				ts_chunk_delete_by_hypertable_id(ht->fd.id);
-
-				/* Drop the chunk tables */
-				foreach_chunk(ht, process_truncate_chunk, stmt);
+				if (!hypertable_is_distributed(ht))
+					relations = lappend(relations, rv);
 			}
+			else
+				relations = lappend(relations, rv);
 		}
+	}
+
+	/* Update relations list to include only tables that hold data. On an
+	 * access node, distributed hypertables hold no data and chunks are
+	 * foreign tables, so those tables are excluded. */
+	stmt->relations = relations;
+
+	if (stmt->relations != NIL)
+	{
+		/* Call standard PostgreSQL handler for remaining tables */
+		prev_ProcessUtility(args);
+	}
+
+	/* For all hypertables, we drop the now empty chunks */
+	foreach (cell, hypertables)
+	{
+		Hypertable *ht = lfirst(cell);
+
+		Assert(ht != NULL);
+
+		process_add_hypertable(args, ht);
+
+		/* Delete the metadata */
+		ts_chunk_delete_by_hypertable_id(ht->fd.id);
+
+		/* Drop the chunk tables */
+		foreach_chunk(ht, process_truncate_chunk, stmt);
 	}
 
 	ts_cache_release(hcache);

@@ -12,6 +12,7 @@
 #include <foreign/foreign.h>
 #include <lib/stringinfo.h>
 
+#include "remote/connection.h"
 #include "data_node_chunk_assignment.h"
 
 /*
@@ -80,7 +81,7 @@ typedef struct TsFdwRelInfo
 	/* Cached catalog information. */
 	ForeignTable *table;
 	ForeignServer *server;
-	UserMapping *user; /* only set in use_remote_estimate mode */
+	TSConnectionId cid; /* only set in use_remote_estimate mode */
 
 	int fetch_size; /* fetch size for this remote table */
 

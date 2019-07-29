@@ -20,23 +20,16 @@ static const char *sql_get_application_name =
 TSConnection *
 get_connection()
 {
-	return remote_connection_open("testdb",
-								  list_make3(makeDefElem("user",
-														 (Node *) makeString(
-															 GetUserNameFromId(GetUserId(), false)),
-														 -1),
-											 makeDefElem("dbname",
-														 (Node *) makeString(
-															 get_database_name(MyDatabaseId)),
-														 -1),
-											 makeDefElem("port",
-														 (Node *) makeString(
-															 pstrdup(GetConfigOption("port",
-																					 false,
-																					 false))),
-														 -1)),
-								  NIL,
-								  false);
+	return remote_connection_open_with_options(
+		"testdb",
+		list_make3(makeDefElem("user",
+							   (Node *) makeString(GetUserNameFromId(GetUserId(), false)),
+							   -1),
+				   makeDefElem("dbname", (Node *) makeString(get_database_name(MyDatabaseId)), -1),
+				   makeDefElem("port",
+							   (Node *) makeString(pstrdup(GetConfigOption("port", false, false))),
+							   -1)),
+		false);
 }
 
 pid_t

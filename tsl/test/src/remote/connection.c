@@ -12,7 +12,6 @@
 #include <foreign/fdwapi.h>
 #include <miscadmin.h>
 #include <access/reloptions.h>
-#include <catalog/pg_user_mapping.h>
 #include <catalog/pg_foreign_server.h>
 #include <commands/dbcommands.h>
 #include <nodes/makefuncs.h>

@@ -177,6 +177,7 @@ execute_drop_chunks_policy(int32 job_id)
 	Hypertable *hypertable;
 	Cache *hcache;
 	Dimension *open_dim;
+	List *dc_temp = NIL;
 
 	if (!IsTransactionOrTransactionBlock())
 	{
@@ -213,7 +214,8 @@ execute_drop_chunks_policy(int32 job_id)
 							InvalidOid,
 							args->fd.cascade,
 							args->fd.cascade_to_materializations,
-							LOG);
+							LOG,
+							&dc_temp);
 
 	ts_cache_release(hcache);
 	elog(LOG, "completed dropping chunks");

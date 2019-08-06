@@ -708,3 +708,20 @@ ts_process_constraints(Oid relid, ProcessConstraint process_func, void *ctx)
 	systable_endscan(scan);
 	heap_close(rel, AccessShareLock);
 }
+
+TSDLLEXPORT Form_pg_type
+ts_get_pg_type(Oid type_oid)
+{
+	Form_pg_type tup;
+	Form_pg_type ret;
+	HeapTuple tp;
+
+	tp = SearchSysCache1(TYPEOID, ObjectIdGetDatum(type_oid));
+	if (!HeapTupleIsValid(tp))
+		elog(ERROR, "cache lookup failed for type %u", type_oid);
+	tup = (Form_pg_type) GETSTRUCT(tp);
+	ret = palloc(sizeof(FormData_pg_type));
+	memcpy(ret, tup, sizeof(FormData_pg_type));
+	ReleaseSysCache(tp);
+	return ret;
+}

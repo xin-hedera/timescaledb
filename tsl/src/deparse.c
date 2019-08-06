@@ -474,3 +474,111 @@ deparse_get_distributed_hypertable_create_command(Hypertable *ht)
 
 	return result;
 }
+
+typedef struct StringInfoWithSeparator
+{
+	StringInfo buff;
+	char *sep;
+	bool empty;
+} StringInfoWithSeparator;
+
+static StringInfoWithSeparator *
+init_string_info_with_sep(const char *sep)
+{
+	StringInfoWithSeparator *str = palloc(sizeof(StringInfoWithSeparator));
+	str->buff = makeStringInfo();
+	str->sep = pstrdup(sep);
+	str->empty = true;
+	return str;
+}
+
+/*
+ * String append with a separator. After first run a separator will be set to `,`, so
+ * consecutive runs will result in a proper separator being added.
+ */
+static void pg_attribute_printf(2, 3)
+	string_info_with_separator_append(StringInfoWithSeparator *str, const char *fmt, ...)
+{
+	va_list fmt_args;
+	int needed_bytes;
+
+	if (!str->empty)
+		appendStringInfo(str->buff, "%s", ", ");
+	while (true)
+	{
+		va_start(fmt_args, fmt);
+		needed_bytes = appendStringInfoVA(str->buff, fmt, fmt_args);
+		va_end(fmt_args);
+
+		if (needed_bytes == 0)
+		{
+			str->empty = false;
+			break;
+		}
+		enlargeStringInfo(str->buff, needed_bytes);
+	}
+}
+
+const char *
+deparse_drop_chunks_func(Name table_name, Name schema_name, Datum older_than_datum,
+						 Datum newer_than_datum, Oid older_than_type, Oid newer_than_type,
+						 bool cascade, bool cascades_to_materializations, bool verbose)
+{
+	Oid out_fn;
+	bool type_is_varlena;
+	char *older_than_str = NULL;
+	char *newer_than_str = NULL;
+	StringInfoWithSeparator *cmd = init_string_info_with_sep(", ");
+
+	appendStringInfo(cmd->buff,
+					 "SELECT * FROM %s.drop_chunks(",
+					 quote_identifier(ts_extension_schema_name()));
+
+	if (older_than_type != InvalidOid)
+	{
+		const char *type_name = NameStr(ts_get_pg_type(older_than_type)->typname);
+		getTypeOutputInfo(older_than_type, &out_fn, &type_is_varlena);
+		older_than_str = OidOutputFunctionCall(out_fn, older_than_datum);
+		string_info_with_separator_append(cmd,
+										  "older_than => %s::%s",
+										  quote_literal_cstr(older_than_str),
+										  type_name);
+	}
+	else
+		string_info_with_separator_append(cmd, "older_than => NULL");
+
+	if (newer_than_type != InvalidOid)
+	{
+		const char *type_name = NameStr(ts_get_pg_type(newer_than_type)->typname);
+		getTypeOutputInfo(newer_than_type, &out_fn, &type_is_varlena);
+		newer_than_str = OidOutputFunctionCall(out_fn, newer_than_datum);
+		string_info_with_separator_append(cmd,
+										  "newer_than => %s::%s",
+										  quote_literal_cstr(newer_than_str),
+										  type_name);
+	}
+	else
+		string_info_with_separator_append(cmd, "newer_than => NULL");
+
+	if (table_name != NULL)
+		string_info_with_separator_append(cmd,
+										  "table_name => %s",
+										  quote_literal_cstr(NameStr(*table_name)));
+	else
+		string_info_with_separator_append(cmd, "table_name => NULL");
+	if (schema_name != NULL)
+		string_info_with_separator_append(cmd,
+										  "schema_name => %s",
+										  quote_literal_cstr(NameStr(*schema_name)));
+	else
+		string_info_with_separator_append(cmd, "schema_name => NULL");
+
+	string_info_with_separator_append(cmd, "cascade => '%s'", cascade ? "true" : "false");
+	string_info_with_separator_append(cmd,
+									  "cascade_to_materializations => '%s'",
+									  cascades_to_materializations ? "true" : "false");
+	string_info_with_separator_append(cmd, "verbose => '%s'", verbose ? "true" : "false");
+
+	appendStringInfo(cmd->buff, ");");
+	return cmd->buff->data;
+}

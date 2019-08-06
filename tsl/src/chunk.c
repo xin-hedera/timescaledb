@@ -18,6 +18,8 @@
 
 #include "chunk.h"
 #include "data_node.h"
+#include "deparse.h"
+#include "remote/dist_commands.h"
 
 static bool
 chunk_set_foreign_server(Chunk *chunk, ForeignServer *new_server)
@@ -156,4 +158,40 @@ chunk_set_default_data_node(PG_FUNCTION_ARGS)
 	Assert(NULL != server);
 
 	PG_RETURN_BOOL(chunk_set_foreign_server(chunk, server));
+}
+
+void
+chunk_drop_remote_chunks(Name table_name, Name schema_name, Datum older_than_datum,
+						 Datum newer_than_datum, Oid older_than_type, Oid newer_than_type,
+						 bool cascade, bool cascades_to_materializations, bool verbose,
+						 List *chunks)
+{
+	List *data_node_server_oids = NIL;
+	ListCell *lc;
+	const char *sql_cmd = deparse_drop_chunks_func(table_name,
+												   schema_name,
+												   older_than_datum,
+												   newer_than_datum,
+												   older_than_type,
+												   newer_than_type,
+												   cascade,
+												   cascades_to_materializations,
+												   verbose);
+
+	foreach (lc, chunks)
+	{
+		Chunk *chunk = lfirst(lc);
+		ListCell *dn;
+
+		foreach (dn, chunk->data_nodes)
+		{
+			ChunkDataNode *cdn = lfirst(dn);
+			data_node_server_oids =
+				list_append_unique_oid(data_node_server_oids, cdn->foreign_server_oid);
+		}
+	}
+
+	ts_dist_cmd_run_on_data_nodes(sql_cmd,
+								  data_node_oids_to_node_name_list(data_node_server_oids,
+																   ACL_USAGE));
 }

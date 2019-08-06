@@ -59,6 +59,7 @@
 #include "cache.h"
 #include "bgw_policy/chunk_stats.h"
 #include "errors.h"
+#include "extension.h"
 
 TS_FUNCTION_INFO_V1(ts_chunk_show_chunks);
 TS_FUNCTION_INFO_V1(ts_chunk_drop_chunks);
@@ -1558,7 +1559,7 @@ chunk_get_chunks_in_time_range(Oid table_relid, Datum older_than_datum, Datum ne
 
 	/*
 	 * contains the list of hypertables which need to be considered. this is a
-	 * list containing a single hypertable if we are passed an invalid table
+	 * list containing a single hypertable if we are passed a valid table
 	 * OID. Otherwise, it will have the list of all hypertables in the system
 	 */
 	List *hypertables = NIL;
@@ -2391,12 +2392,14 @@ chunks_return_srf(FunctionCallInfo fcinfo)
 List *
 ts_chunk_do_drop_chunks(Oid table_relid, Datum older_than_datum, Datum newer_than_datum,
 						Oid older_than_type, Oid newer_than_type, bool cascade,
-						bool cascades_to_materializations, int32 log_level)
+						bool cascades_to_materializations, int32 log_level,
+						List **dropped_chunks_ptr)
 {
 	int i = 0;
 	uint64 num_chunks = 0;
 	Chunk **chunks;
 	List *dropped_chunk_names = NIL;
+	List *dropped_chunks = NIL;
 	const char *schema_name, *table_name;
 	int32 hypertable_id = ts_hypertable_relid_to_id(table_relid);
 
@@ -2407,6 +2410,7 @@ ts_chunk_do_drop_chunks(Oid table_relid, Datum older_than_datum, Datum newer_tha
 		case HypertableIsMaterialization:
 		case HypertableIsMaterializationAndRaw:
 			elog(ERROR, "cannot drop_chunks on a continuous aggregate materialization table");
+			return NIL;
 		case HypertableIsRawTable:
 			if (!cascades_to_materializations)
 				ereport(ERROR,
@@ -2438,6 +2442,8 @@ ts_chunk_do_drop_chunks(Oid table_relid, Datum older_than_datum, Datum newer_tha
 			.objectId = chunks[i]->table_id,
 		};
 
+		dropped_chunks = lappend(dropped_chunks, chunks[i]);
+
 		elog(log_level,
 			 "dropping chunk %s.%s",
 			 chunks[i]->fd.schema_name.data,
@@ -2463,6 +2469,7 @@ ts_chunk_do_drop_chunks(Oid table_relid, Datum older_than_datum, Datum newer_tha
 	if (cascades_to_materializations)
 		ts_cm_functions->continuous_agg_drop_chunks_by_chunk_id(hypertable_id, chunks, num_chunks);
 
+	*dropped_chunks_ptr = dropped_chunks;
 	return dropped_chunk_names;
 }
 
@@ -2518,6 +2525,7 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 	FuncCallContext *funcctx;
 	ListCell *lc;
 	List *ht_oids, *dc_names = NIL;
+	List *dist_dropped_chunks = NIL;
 
 	Name table_name, schema_name;
 	Datum older_than_datum, newer_than_datum;
@@ -2572,6 +2580,10 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 		List *fk_relids = NIL;
 		List *dc_temp = NIL;
 		ListCell *lf;
+		List *dropped_chunks = NIL;
+		int32 hypertable_id = ts_hypertable_relid_to_id(table_relid);
+		Hypertable *ht = ts_hypertable_get_by_id(hypertable_id);
+		bool distributed_ht = hypertable_is_distributed(ht);
 
 		ts_hypertable_permissions_check(table_relid, GetUserId());
 
@@ -2623,16 +2635,33 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		dc_temp = ts_chunk_do_drop_chunks(table_relid,
-										  older_than_datum,
-										  newer_than_datum,
-										  older_than_type,
-										  newer_than_type,
-										  cascade,
-										  cascades_to_materializations,
-										  elevel);
+												 older_than_datum,
+												 newer_than_datum,
+												 older_than_type,
+												 newer_than_type,
+												 cascade,
+												 cascades_to_materializations,
+												 elevel,
+												 &dropped_chunks);
 		dc_names = list_concat(dc_names, dc_temp);
 
 		MemoryContextSwitchTo(oldcontext);
+		if (distributed_ht)
+			dist_dropped_chunks = list_concat(dist_dropped_chunks, dropped_chunks);
+	}
+
+	if (dist_dropped_chunks != NIL)
+	{
+		ts_cm_functions->drop_chunks_on_data_nodes(table_name,
+												   schema_name,
+												   older_than_datum,
+												   newer_than_datum,
+												   older_than_type,
+												   newer_than_type,
+												   cascade,
+												   cascades_to_materializations,
+												   verbose,
+												   dist_dropped_chunks);
 	}
 
 	/* store data for multi function call */

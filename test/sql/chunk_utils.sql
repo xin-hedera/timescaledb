@@ -574,3 +574,41 @@ SELECT drop_chunks(table_name=>'drop_chunk_test3', older_than=>100);
 \set ECHO all
 
 \set ON_ERROR_STOP 1
+
+-- test drop chunks across two tables within the same schema
+\c  :TEST_DBNAME :ROLE_SUPERUSER
+CREATE SCHEMA test1;
+CREATE TABLE test1.hyper1 (time bigint, temp float);
+CREATE TABLE test1.hyper2 (time bigint, temp float);
+
+SELECT create_hypertable('test1.hyper1', 'time', chunk_time_interval => 10);
+SELECT create_hypertable('test1.hyper2', 'time', chunk_time_interval => 10);
+
+INSERT INTO test1.hyper1 VALUES (10, 0.5);
+INSERT INTO test1.hyper2 VALUES (10, 0.7);
+
+SELECT drop_chunks(schema_name=>'test1', older_than => 100);
+SELECT show_chunks('test1.hyper1');
+SELECT show_chunks('test1.hyper2');
+
+
+-- test drop chunks for given table name across all schemas
+CREATE SCHEMA test2;
+CREATE SCHEMA test3;
+
+CREATE TABLE test2.hyperx (time bigint, temp float);
+CREATE TABLE test3.hyperx (time bigint, temp float);
+
+SELECT create_hypertable('test2.hyperx', 'time', chunk_time_interval => 10);
+SELECT create_hypertable('test3.hyperx', 'time', chunk_time_interval => 10);
+
+INSERT INTO test2.hyperx VALUES (10, 0.5);
+INSERT INTO test3.hyperx VALUES (10, 0.7);
+
+SELECT show_chunks('test2.hyperx');
+SELECT show_chunks('test3.hyperx');
+
+SELECT drop_chunks(table_name=>'hyperx', older_than => 100);
+SELECT show_chunks('test2.hyperx');
+SELECT show_chunks('test3.hyperx');
+

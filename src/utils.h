@@ -11,6 +11,7 @@
 #include <access/htup_details.h>
 #include <catalog/pg_proc.h>
 #include <catalog/pg_constraint.h>
+#include <catalog/pg_type.h>
 #include <nodes/primnodes.h>
 #include <nodes/relation.h>
 #include <utils/datetime.h>
@@ -109,5 +110,7 @@ int64_min(int64 a, int64 b)
 		return a;
 	return b;
 }
+
+extern TSDLLEXPORT Form_pg_type ts_get_pg_type(Oid type_oid);
 
 #endif /* TIMESCALEDB_UTILS_H */

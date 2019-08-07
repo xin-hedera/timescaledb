@@ -10,6 +10,7 @@ set(SOURCES
 
 if (NOT ${PG_VERSION} VERSION_LESS "11")
   list(APPEND SOURCES
+       async_append.c
        chunk.c
        deparse.c
        data_node.c

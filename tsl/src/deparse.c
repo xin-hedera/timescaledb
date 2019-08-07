@@ -304,8 +304,8 @@ deparse_get_tabledef(TableInfo *table_info)
 	Relation rel = relation_open(table_info->relid, AccessShareLock);
 
 	appendStringInfo(set_schema,
-					 "SET SCHEMA '%s';",
-					 quote_identifier(get_namespace_name(rel->rd_rel->relnamespace)));
+					 "SET SCHEMA %s;",
+					 quote_literal_cstr(get_namespace_name(rel->rd_rel->relnamespace)));
 	table_def->schema_cmd = set_schema->data;
 
 	appendStringInfoString(create_table, "CREATE");

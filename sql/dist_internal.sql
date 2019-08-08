@@ -25,5 +25,5 @@ RETURNS TABLE (table_schema    name,
     total_bytes     bigint)
 AS '@MODULE_PATHNAME@', 'ts_dist_remote_hypertable_info' LANGUAGE C VOLATILE STRICT;
 
-CREATE OR REPLACE FUNCTION _timescaledb_internal.validate_as_data_node() RETURNS BOOL
+CREATE OR REPLACE FUNCTION _timescaledb_internal.validate_as_data_node() RETURNS void
 AS '@MODULE_PATHNAME@', 'ts_dist_validate_as_data_node' LANGUAGE C VOLATILE STRICT;

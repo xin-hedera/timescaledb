@@ -1,5 +1,7 @@
 include("${PRIMARY_TEST_DIR}/test-defs.cmake")
 
+add_subdirectory(ssl)
+
 #TODO after we have isolation checks isolationcheck-t)
 
 set(_local_install_checks)

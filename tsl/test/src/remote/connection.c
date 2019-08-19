@@ -61,134 +61,92 @@ test_simple_queries()
 {
 	TSConnection *conn = get_connection();
 	PGresult *res;
-	remote_connection_query_ok_result(conn, "SELECT 1");
-	remote_connection_query_ok_result(conn, "SET search_path = pg_catalog");
+	remote_connection_exec(conn, "SELECT 1");
+	remote_connection_exec(conn, "SET search_path = pg_catalog");
 
-	res = remote_connection_query_any_result(conn, "SELECT 1");
+	res = remote_connection_exec(conn, "SELECT 1");
 	Assert(PQresultStatus(res) == PGRES_TUPLES_OK);
-	remote_connection_result_close(res);
-	res = remote_connection_query_any_result(conn, "SELECT abc");
+	PQclear(res);
+	res = remote_connection_exec(conn, "SELECT abc");
 	Assert(PQresultStatus(res) != PGRES_TUPLES_OK);
-	remote_connection_result_close(res);
-	res = remote_connection_query_any_result(conn, "SET search_path = pg_catalog");
+	PQclear(res);
+	res = remote_connection_exec(conn, "SET search_path = pg_catalog");
 	Assert(PQresultStatus(res) == PGRES_COMMAND_OK);
-	remote_connection_result_close(res);
-	res = remote_connection_query_any_result(conn, "SET 123 = 123");
+	PQclear(res);
+	res = remote_connection_exec(conn, "SET 123 = 123");
 	Assert(PQresultStatus(res) != PGRES_COMMAND_OK);
-	remote_connection_result_close(res);
+	PQclear(res);
 
-	remote_connection_exec_ok_command(conn, "SET search_path = pg_catalog");
+	remote_connection_cmd_ok(conn, "SET search_path = pg_catalog");
 	/* not a command */
-	EXPECT_ERROR_STMT(remote_connection_exec_ok_command(conn, "SELECT 1"));
+	EXPECT_ERROR_STMT(remote_connection_cmd_ok(conn, "SELECT 1"));
 	remote_connection_close(conn);
 }
 
-static void
-test_prepared_stmts()
-{
-	TSConnection *conn = get_connection();
-	const char **params = (const char **) palloc(sizeof(char *) * 5);
-	PreparedStmt *prep;
-	PGresult *res;
-
-	prep = remote_connection_prepare(conn, "SELECT 3", 0);
-	res = remote_connection_query_prepared_ok_result(prep, NULL);
-	Assert(PQresultStatus(res) == PGRES_TUPLES_OK);
-	Assert(strcmp(PQgetvalue(res, 0, 0), "3") == 0);
-	remote_connection_result_close(res);
-	prepared_stmt_close(prep);
-
-	prep = remote_connection_prepare(conn, "SELECT $1, $3, $2", 3);
-	params[0] = "2";
-	params[1] = "4";
-	params[2] = "8";
-	res = remote_connection_query_prepared_ok_result(prep, params);
-	Assert(PQresultStatus(res) == PGRES_TUPLES_OK);
-	Assert(strcmp(PQgetvalue(res, 0, 0), "2") == 0);
-	Assert(strcmp(PQgetvalue(res, 0, 1), "8") == 0);
-	Assert(strcmp(PQgetvalue(res, 0, 2), "4") == 0);
-	remote_connection_result_close(res);
-	prepared_stmt_close(prep);
-
-	/* malformed sql (missing commas) */
-	EXPECT_ERROR_STMT(prep = remote_connection_prepare(conn, "SELECT $1 $3 $2", 3));
-
-	remote_connection_close(conn);
-}
+#define ASSERT_NUM_OPEN_CONNECTIONS(stats, num)                                                    \
+	Assert((((stats)->connections_created - (stats)->connections_closed) == num))
+#define ASSERT_NUM_OPEN_RESULTS(stats, num)                                                        \
+	Assert((((stats)->results_created - (stats)->results_cleared) == num))
 
 static void
-test_params()
-{
-	TSConnection *conn = get_connection();
-	const char **params = (const char **) palloc(sizeof(char *) * 5);
-	PGresult *res;
-
-	params[0] = "2";
-
-	res = remote_connection_query_with_params_ok_result(conn, "SELECT $1", 1, params);
-	Assert(PQresultStatus(res) == PGRES_TUPLES_OK);
-	Assert(strcmp(PQgetvalue(res, 0, 0), "2") == 0);
-	remote_connection_result_close(res);
-
-	EXPECT_ERROR
-	res = remote_connection_query_with_params_ok_result(conn, "SELECT 1 2 3", 1, params);
-	EXPECT_ERROR_END
-
-	remote_connection_close(conn);
-}
-
-static void
-test_result_leaks()
+test_connection_and_result_leaks()
 {
 	TSConnection *conn, *subconn;
 	PGresult *res;
-	RemoteConnectionStats *stats, savedstats;
+	RemoteConnectionStats *stats;
 
 	stats = remote_connection_stats_get();
-
 	remote_connection_stats_reset();
 
 	conn = get_connection();
-	res = remote_connection_query_ok_result(conn, "SELECT 1");
+	res = remote_connection_exec(conn, "SELECT 1");
 	remote_connection_close(conn);
-	Assert(stats->connections_closed == 1);
-	Assert(stats->connections_closed == stats->connections_created);
-	Assert(stats->results_cleared == stats->results_created);
 
-	/* Reset stats */
-	remote_connection_stats_reset();
+	ASSERT_NUM_OPEN_CONNECTIONS(stats, 0);
+	ASSERT_NUM_OPEN_RESULTS(stats, 0);
+
 	conn = get_connection();
+
+	ASSERT_NUM_OPEN_CONNECTIONS(stats, 1);
 
 	BeginInternalSubTransaction("conn leak test");
 
 	subconn = get_connection();
-	remote_connection_query_ok_result(conn, "SELECT 1");
+	ASSERT_NUM_OPEN_CONNECTIONS(stats, 2);
+
+	remote_connection_exec(conn, "SELECT 1");
+	ASSERT_NUM_OPEN_RESULTS(stats, 1);
 
 	BeginInternalSubTransaction("conn leak test 2");
 
-	res = remote_connection_query_ok_result(subconn, "SELECT 1");
+	res = remote_connection_exec(subconn, "SELECT 1");
+	ASSERT_NUM_OPEN_RESULTS(stats, 2);
 
 	/* Explicitly close one result */
-	remote_connection_result_close(res);
+	remote_result_close(res);
 
-	/* get_connection() creates and clears results so use saved stats as a
-	 * reference */
-	savedstats = *stats;
-	remote_connection_query_ok_result(subconn, "SELECT 1");
-	remote_connection_query_ok_result(conn, "SELECT 1");
+	ASSERT_NUM_OPEN_RESULTS(stats, 1);
+
+	remote_connection_exec(subconn, "SELECT 1");
+	remote_connection_exec(conn, "SELECT 1");
+
+	ASSERT_NUM_OPEN_RESULTS(stats, 3);
 
 	RollbackAndReleaseCurrentSubTransaction();
 
-	/* Should have cleared two results on rollback (one on each connection) */
-	Assert(stats->results_cleared == (savedstats.results_cleared + 2));
-	remote_connection_query_ok_result(subconn, "SELECT 1");
+	/* Rollback should have cleared the two results created in the
+	 * sub-transaction, but not the one created before the sub-transaction */
+	ASSERT_NUM_OPEN_RESULTS(stats, 1);
 
-	savedstats = *stats;
+	remote_connection_exec(subconn, "SELECT 1");
+	ASSERT_NUM_OPEN_RESULTS(stats, 2);
+
 	ReleaseCurrentSubTransaction();
 
-	/* Should have cleared three results and one connection */
-	Assert(stats->results_cleared == (savedstats.results_cleared + 3));
-	Assert(stats->connections_closed == (savedstats.connections_closed + 1));
+	/* Should only leave the original connection created before the first
+	 * sub-transaction, but no results */
+	ASSERT_NUM_OPEN_CONNECTIONS(stats, 1);
+	ASSERT_NUM_OPEN_RESULTS(stats, 0);
 
 	remote_connection_stats_reset();
 }
@@ -202,11 +160,12 @@ Datum
 tsl_test_bad_remote_query(PG_FUNCTION_ARGS)
 {
 	TSConnection *conn;
+	PGresult *result;
 
-	EXPECT_ERROR;
 	conn = get_connection();
-	remote_connection_query_ok_result(conn, "BADY QUERY SHOULD THROW ERROR");
-	EXPECT_ERROR_END;
+	result = remote_connection_exec(conn, "BADY QUERY SHOULD THROW ERROR");
+	Assert(PQresultStatus(result) == PGRES_FATAL_ERROR);
+	elog(ERROR, "bad query error thrown from test");
 
 	PG_RETURN_VOID();
 }
@@ -255,9 +214,7 @@ tsl_test_remote_connection(PG_FUNCTION_ARGS)
 	test_options();
 	test_numbers_associated_with_connections();
 	test_simple_queries();
-	test_prepared_stmts();
-	test_params();
-	test_result_leaks();
+	test_connection_and_result_leaks();
 
 	PG_RETURN_VOID();
 }

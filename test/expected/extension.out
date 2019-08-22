@@ -32,6 +32,7 @@ ORDER BY proname;
  detach_data_node
  detach_tablespace
  detach_tablespaces
+ distributed_exec
  drop_chunks
  first
  get_telemetry_report
@@ -61,5 +62,5 @@ ORDER BY proname;
  timescaledb_fdw_validator
  timescaledb_post_restore
  timescaledb_pre_restore
-(47 rows)
+(48 rows)
 

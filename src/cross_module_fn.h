@@ -140,7 +140,7 @@ typedef struct CrossModuleFunctions
 									  Oid newer_than_type, bool cascade,
 									  bool cascades_to_materializations, bool verbose,
 									  List *chunks);
-
+	PGFunction distributed_exec;
 } CrossModuleFunctions;
 
 extern TSDLLEXPORT CrossModuleFunctions *ts_cm_functions;

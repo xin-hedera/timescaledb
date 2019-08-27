@@ -75,17 +75,8 @@ extern void remote_result_elog(PGresult *res, int elevel);
 
 /* wrappers around async stuff to emulate sync communication */
 
-#define remote_connection_id(server_oid, user_oid)                                                 \
-	{                                                                                              \
-		.server_id = (server_oid), .user_id = (user_oid)                                           \
-	}
-
-#define remote_connection_id_set(id, server_oid, user_oid)                                         \
-	do                                                                                             \
-	{                                                                                              \
-		(id)->server_id = (server_oid);                                                            \
-		(id)->user_id = (user_oid);                                                                \
-	} while (0)
+extern TSConnectionId remote_connection_id(Oid server_oid, Oid user_oid);
+extern void remote_connection_id_set(TSConnectionId *id, Oid server_oid, Oid user_oid);
 
 typedef struct RemoteConnectionStats
 {

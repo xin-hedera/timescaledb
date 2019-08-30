@@ -1035,12 +1035,12 @@ ERROR:  server "server_2" does not exist
 SELECT * FROM drop_chunks(table_name => 'disttable', older_than => '2200-01-01 00:00'::timestamptz);
                  drop_chunks                  
 ----------------------------------------------
- _timescaledb_internal._hyper_7_5_dist_chunk
- _timescaledb_internal._hyper_7_6_dist_chunk
- _timescaledb_internal._hyper_7_7_dist_chunk
- _timescaledb_internal._hyper_7_8_dist_chunk
- _timescaledb_internal._hyper_7_9_dist_chunk
- _timescaledb_internal._hyper_7_10_dist_chunk
+ _timescaledb_internal._hyper_8_5_dist_chunk
+ _timescaledb_internal._hyper_8_6_dist_chunk
+ _timescaledb_internal._hyper_8_7_dist_chunk
+ _timescaledb_internal._hyper_8_8_dist_chunk
+ _timescaledb_internal._hyper_8_9_dist_chunk
+ _timescaledb_internal._hyper_8_10_dist_chunk
 (6 rows)
 
 SELECT foreign_table_name, foreign_server_name

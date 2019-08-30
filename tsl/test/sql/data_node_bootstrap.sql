@@ -23,7 +23,7 @@ SET ROLE :ROLE_DEFAULT_PERM_USER;
 -- bootstrap_user     = :ROLE_DEFAULT_PERM_USER
 -- bootstrap_database = 'postgres'
 \set ON_ERROR_STOP 0
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test');
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test');
 \set ON_ERROR_STOP 1
 SELECT * FROM show_data_nodes();
 
@@ -32,7 +32,7 @@ SELECT * FROM show_data_nodes();
 -- bootstrap_user     = :ROLE_SUPERUSER
 -- bootstrap_database = 'postgres'
 RESET ROLE;
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test');
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test');
 SET ROLE :ROLE_DEFAULT_PERM_USER;
 SELECT * FROM show_data_nodes();
 
@@ -52,17 +52,20 @@ SELECT extname FROM pg_extension;
 --
 -- bootstrap_user     = :ROLE_SUPERUSER
 -- bootstrap_database = 'postgres'
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test', if_not_exists => false);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+       	      		    database => 'bootstrap_test', if_not_exists => false);
 SELECT * FROM show_data_nodes();
 \set ON_ERROR_STOP 0
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test', if_not_exists => false);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', if_not_exists => false);
 \set ON_ERROR_STOP 1
 
 -- Test if_not_exists functionality (no local server, but remote database and extension exists)
 --
 -- bootstrap_user     = :ROLE_SUPERUSER
 -- bootstrap_database = 'postgres'
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test', if_not_exists => true);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', if_not_exists => true);
 SELECT * FROM show_data_nodes();
 
 -- Test if_not_exists functionality (has local server, has database database but no extension installed)
@@ -74,7 +77,8 @@ SELECT extname FROM pg_extension;
 DROP EXTENSION timescaledb CASCADE;
 SELECT extname FROM pg_extension;
 \c :TEST_DBNAME :ROLE_SUPERUSER;
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test', if_not_exists => true);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', if_not_exists => true);
 \c bootstrap_test :ROLE_SUPERUSER;
 SELECT extname FROM pg_extension;
 \c :TEST_DBNAME :ROLE_SUPERUSER;
@@ -91,11 +95,12 @@ SET client_min_messages TO ERROR;
 CREATE EXTENSION timescaledb WITH SCHEMA bootstrap_schema;
 SET client_min_messages TO NOTICE;
 SELECT extname FROM pg_extension;
-SELECT * FROM bootstrap_schema.add_data_node('bootstrap_test', database => 'bootstrap_test');
+SELECT * FROM bootstrap_schema.add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test');
 \c bootstrap_test :ROLE_SUPERUSER;
 SELECT extname FROM pg_extension;
 \c bootstrap_schema_test :ROLE_SUPERUSER;
-SELECT * FROM bootstrap_schema.add_data_node('bootstrap_test', database => 'bootstrap_test', if_not_exists => true);
+SELECT * FROM bootstrap_schema.add_data_node('bootstrap_test', host => 'localhost',
+                                             database => 'bootstrap_test', if_not_exists => true);
 \c :TEST_DBNAME :ROLE_SUPERUSER;
 DROP DATABASE bootstrap_schema_test;
 DROP DATABASE bootstrap_test;
@@ -105,7 +110,10 @@ SET ROLE :ROLE_1;
 --
 -- bootstrap_user     = :ROLE_CLUSTER_SUPERUSER
 -- bootstrap_database = 'template1'
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test', bootstrap_user => :'ROLE_CLUSTER_SUPERUSER', bootstrap_database => 'template1');
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test',
+			    bootstrap_user => :'ROLE_CLUSTER_SUPERUSER',
+			    bootstrap_database => 'template1');
 \c bootstrap_test :ROLE_DEFAULT_PERM_USER;
 SELECT extname FROM pg_extension;
 \c :TEST_DBNAME :ROLE_SUPERUSER;
@@ -114,7 +122,7 @@ SELECT * FROM delete_data_node('bootstrap_test');
 -- Test for ongoing transaction
 BEGIN;
 \set ON_ERROR_STOP 0
-SELECT * FROM add_data_node('bootstrap_test', database => 'bootstrap_test');
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test');
 \set ON_ERROR_STOP 1
 COMMIT;
 SELECT * FROM show_data_nodes();
@@ -125,17 +133,20 @@ DROP DATABASE bootstrap_test;
 --
 -- bootstrap_user     = :ROLE_SUPERUSER
 -- bootstrap_database = 'postgres'
-SELECT true FROM add_data_node('bootstrap_test1', database => 'Unusual Name');
-SELECT true FROM add_data_node('bootstrap_test1', database => 'Unusual Name', if_not_exists => true);
+SELECT true FROM add_data_node('bootstrap_test1', host => 'localhost', database => 'Unusual Name');
+SELECT true FROM add_data_node('bootstrap_test1', host => 'localhost',
+                               database => 'Unusual Name', if_not_exists => true);
 
-SELECT true FROM add_data_node('bootstrap_test2', database => U&'\0441\043B\043E\043D');
-SELECT true FROM add_data_node('bootstrap_test2', database => U&'\0441\043B\043E\043D', if_not_exists => true);
+SELECT true FROM add_data_node('bootstrap_test2', host => 'localhost',
+                               database => U&'\0441\043B\043E\043D');
+SELECT true FROM add_data_node('bootstrap_test2', host => 'localhost',
+                               database => U&'\0441\043B\043E\043D', if_not_exists => true);
 
 -- Testing that the check for database privileges does not croak on a
 -- strange database name. The check is executed when a database
 -- already exists.
-SELECT true FROM add_data_node('bootstrap_test3', database => 'dat''abase');
-SELECT true FROM add_data_node('bootstrap_test4', database => 'dat''abase');
+SELECT true FROM add_data_node('bootstrap_test3', host => 'localhost', database => 'dat''abase');
+SELECT true FROM add_data_node('bootstrap_test4', host => 'localhost', database => 'dat''abase');
 
 SELECT count(*) FROM show_data_nodes();
 SELECT true FROM pg_database WHERE datname = 'Unusual Name';

@@ -396,7 +396,9 @@ deparse_get_add_dimension_command(Hypertable *ht, Dimension *dimension)
 															dimension->fd.partitioning_func_schema),
 														NameStr(dimension->fd.partitioning_func))));
 	else
-		appendStringInfo(dim_cmd, "chunk_time_interval => %ld);", dimension->fd.interval_length);
+		appendStringInfo(dim_cmd,
+						 "chunk_time_interval => " INT64_FORMAT ");",
+						 dimension->fd.interval_length);
 
 	return dim_cmd->data;
 }
@@ -436,7 +438,9 @@ deparse_get_distributed_hypertable_create_command(Hypertable *ht)
 					 ", associated_table_prefix => %s",
 					 quote_literal_cstr(NameStr(ht->fd.associated_table_prefix)));
 
-	appendStringInfo(hypertable_cmd, ", chunk_time_interval => %ld", time_dim->fd.interval_length);
+	appendStringInfo(hypertable_cmd,
+					 ", chunk_time_interval => " INT64_FORMAT "",
+					 time_dim->fd.interval_length);
 
 	if (OidIsValid(ht->chunk_sizing_func))
 	{
@@ -445,7 +449,9 @@ deparse_get_distributed_hypertable_create_command(Hypertable *ht)
 						 quote_literal_cstr(
 							 quote_qualified_identifier(NameStr(ht->fd.chunk_sizing_func_schema),
 														NameStr(ht->fd.chunk_sizing_func_name))));
-		appendStringInfo(hypertable_cmd, ", chunk_target_size => '%ld'", ht->fd.chunk_target_size);
+		appendStringInfo(hypertable_cmd,
+						 ", chunk_target_size => '" INT64_FORMAT "'",
+						 ht->fd.chunk_target_size);
 	}
 
 	/*

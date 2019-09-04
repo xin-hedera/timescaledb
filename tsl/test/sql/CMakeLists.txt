@@ -52,10 +52,6 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
   list(APPEND TEST_FILES
     chunk_api.sql
     dist_query.sql
-    partitionwise_distributed.sql
-    hypertable_distributed.sql
-    ddl_distributed.sql
-    dist_partial_agg.sql
   )
   list(APPEND TEST_FILES_DEBUG
     remote_connection.sql
@@ -67,6 +63,10 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     dist_commands.sql
     deparse.sql
     deparse_fail.sql
+    hypertable_distributed.sql
+    ddl_distributed.sql
+    dist_partial_agg.sql
+    partitionwise_distributed.sql
     remote_txn_resolve.sql
     remote_stmt_params.sql
     remote_copy.sql

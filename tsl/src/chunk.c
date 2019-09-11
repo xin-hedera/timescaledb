@@ -161,22 +161,11 @@ chunk_set_default_data_node(PG_FUNCTION_ARGS)
 }
 
 void
-chunk_drop_remote_chunks(Name table_name, Name schema_name, Datum older_than_datum,
-						 Datum newer_than_datum, Oid older_than_type, Oid newer_than_type,
-						 bool cascade, bool cascades_to_materializations, bool verbose,
-						 List *chunks)
+chunk_drop_remote_chunks(FunctionCallInfo fcinfo, List *chunks)
 {
 	List *data_node_server_oids = NIL;
 	ListCell *lc;
-	const char *sql_cmd = deparse_drop_chunks_func(table_name,
-												   schema_name,
-												   older_than_datum,
-												   newer_than_datum,
-												   older_than_type,
-												   newer_than_type,
-												   cascade,
-												   cascades_to_materializations,
-												   verbose);
+	const char *sql_cmd = deparse_func_call(fcinfo);
 
 	foreach (lc, chunks)
 	{

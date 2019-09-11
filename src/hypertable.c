@@ -130,8 +130,8 @@ hypertable_from_tuple(HeapTuple tuple, MemoryContext mctx, TupleDesc desc)
 	Datum datum;
 
 	datum = heap_getattr(tuple, Anum_hypertable_replication_factor, desc, &isnull);
-	h = (Hypertable *)ts_create_struct_from_tuple(tuple, mctx, sizeof(Hypertable), 
-			HYPERTABLE_TUPLE_SIZE(isnull));
+	h = (Hypertable *)
+		ts_create_struct_from_tuple(tuple, mctx, sizeof(Hypertable), HYPERTABLE_TUPLE_SIZE(isnull));
 	namespace_oid = get_namespace_oid(NameStr(h->fd.schema_name), false);
 	h->main_table_relid = get_relname_relid(NameStr(h->fd.table_name), namespace_oid);
 	h->space = ts_dimension_scan(h->fd.id, h->main_table_relid, h->fd.num_dimensions, mctx);

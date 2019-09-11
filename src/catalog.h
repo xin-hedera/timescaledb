@@ -133,8 +133,8 @@ typedef struct FormData_hypertable
 typedef FormData_hypertable *Form_hypertable;
 
 /* replication_factor can be NULL, thus it should not be used through the struct from the tuple */
-#define HYPERTABLE_TUPLE_SIZE(isnull) \
-	(offsetof(FormData_hypertable, replication_factor)  + (isnull ? 0 : sizeof(int16)))
+#define HYPERTABLE_TUPLE_SIZE(isnull)                                                              \
+	(offsetof(FormData_hypertable, replication_factor) + (isnull ? 0 : sizeof(int16)))
 
 /* Hypertable primary index attribute numbers */
 enum Anum_hypertable_pkey_idx

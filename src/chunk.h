@@ -122,8 +122,7 @@ extern void ts_chunks_rename_schema_name(char *old_schema, char *new_schema);
 extern TSDLLEXPORT List *ts_chunk_do_drop_chunks(Oid table_relid, Datum older_than_datum,
 												 Datum newer_than_datum, Oid older_than_type,
 												 Oid newer_than_type, bool cascade,
-												 bool cascades_to_materializations,
-												 int32 log_level,
+												 bool cascades_to_materializations, int32 log_level,
 												 List **dropped_chunks_ptr);
 extern TSDLLEXPORT Chunk *ts_chunk_find_or_create_without_cuts(Hypertable *ht, Hypercube *hc,
 															   const char *schema_name,

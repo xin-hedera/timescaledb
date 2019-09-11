@@ -2522,6 +2522,33 @@ list_return_srf(FunctionCallInfo fcinfo)
 		SRF_RETURN_DONE(funcctx);
 }
 
+static void
+drop_remote_chunks(FunctionCallInfo fcinfo, List *dropped_chunks)
+{
+	List *data_nodes = NIL;
+	ListCell *lc;
+
+	if (dropped_chunks == NIL)
+		return;
+
+	Assert(ts_cm_functions->func_call_on_data_nodes != NULL);
+
+	foreach (lc, dropped_chunks)
+	{
+		Chunk *chunk = lfirst(lc);
+		ListCell *dn;
+
+		foreach (dn, chunk->data_nodes)
+		{
+			ChunkDataNode *cdn = lfirst(dn);
+			data_nodes = list_append_unique_oid(data_nodes, cdn->foreign_server_oid);
+		}
+	}
+
+	Assert(data_nodes != NIL);
+	ts_cm_functions->func_call_on_data_nodes(fcinfo, data_nodes);
+}
+
 Datum
 ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 {
@@ -2566,13 +2593,10 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 
 	ht_oids = ts_hypertable_get_all_by_name(schema_name, table_name, CurrentMemoryContext);
 
-	if (table_name != NULL)
-	{
-		if (ht_oids == NIL)
-			ereport(ERROR,
-					(errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST),
-					 errmsg("hypertable \"%s\" does not exist", NameStr(*table_name))));
-	}
+	if (table_name != NULL && ht_oids == NIL)
+		ereport(ERROR,
+				(errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST),
+				 errmsg("hypertable \"%s\" does not exist", NameStr(*table_name))));
 
 	/* Initial multi function call setup */
 	funcctx = SRF_FIRSTCALL_INIT();
@@ -2584,10 +2608,9 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 		List *fk_relids = NIL;
 		List *dc_temp = NIL;
 		ListCell *lf;
-		List *dropped_chunks = NIL;
 		int32 hypertable_id = ts_hypertable_relid_to_id(table_relid);
 		Hypertable *ht = ts_hypertable_get_by_id(hypertable_id);
-		bool distributed_ht = hypertable_is_distributed(ht);
+		List *dropped_chunks;
 
 		ts_hypertable_permissions_check(table_relid, GetUserId());
 
@@ -2639,34 +2662,24 @@ ts_chunk_drop_chunks(PG_FUNCTION_ARGS)
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
 		dc_temp = ts_chunk_do_drop_chunks(table_relid,
-												 older_than_datum,
-												 newer_than_datum,
-												 older_than_type,
-												 newer_than_type,
-												 cascade,
-												 cascades_to_materializations,
-												 elevel,
-												 &dropped_chunks);
+										  older_than_datum,
+										  newer_than_datum,
+										  older_than_type,
+										  newer_than_type,
+										  cascade,
+										  cascades_to_materializations,
+										  elevel,
+										  &dropped_chunks);
 		dc_names = list_concat(dc_names, dc_temp);
 
 		MemoryContextSwitchTo(oldcontext);
-		if (distributed_ht)
+
+		if (hypertable_is_distributed(ht))
 			dist_dropped_chunks = list_concat(dist_dropped_chunks, dropped_chunks);
 	}
 
 	if (dist_dropped_chunks != NIL)
-	{
-		ts_cm_functions->drop_chunks_on_data_nodes(table_name,
-												   schema_name,
-												   older_than_datum,
-												   newer_than_datum,
-												   older_than_type,
-												   newer_than_type,
-												   cascade,
-												   cascades_to_materializations,
-												   verbose,
-												   dist_dropped_chunks);
-	}
+		drop_remote_chunks(fcinfo, dist_dropped_chunks);
 
 	/* store data for multi function call */
 	funcctx->max_calls = list_length(dc_names);

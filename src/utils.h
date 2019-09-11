@@ -111,6 +111,4 @@ int64_min(int64 a, int64 b)
 	return b;
 }
 
-extern TSDLLEXPORT Form_pg_type ts_get_pg_type(Oid type_oid);
-
 #endif /* TIMESCALEDB_UTILS_H */

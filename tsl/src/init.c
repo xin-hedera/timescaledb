@@ -26,6 +26,7 @@
 #include "continuous_aggs/materialize.h"
 #include "continuous_aggs/options.h"
 #include "compat.h"
+#include "hypertable.h"
 
 #if PG11_GE
 #include "process_utility.h"
@@ -34,7 +35,6 @@
 #include "fdw/fdw.h"
 #include "data_node.h"
 #include "chunk_api.h"
-#include "hypertable.h"
 #include "remote/connection_cache.h"
 #include "remote/dist_txn.h"
 #include "remote/txn_id.h"
@@ -150,6 +150,13 @@ error_data_node_set_block_new_chunks_not_supported(PG_FUNCTION_ARGS, bool block)
 	pg_unreachable();
 }
 
+static void
+error_func_call_on_data_nodes_not_supported(FunctionCallInfo fcinfo, List *data_nodes)
+{
+	error_not_supported();
+	pg_unreachable();
+}
+
 #endif /* PG96 || PG10 */
 
 /*
@@ -221,6 +228,7 @@ CrossModuleFunctions tsl_cm_functions = {
 	.remote_hypertable_info = error_not_supported_default_fn,
 	.validate_as_data_node = NULL,
 	.distributed_exec = error_not_supported_default_fn,
+	.func_call_on_data_nodes = error_func_call_on_data_nodes_not_supported,
 #else
 	.add_data_node = data_node_add,
 	.delete_data_node = data_node_delete,
@@ -251,8 +259,8 @@ CrossModuleFunctions tsl_cm_functions = {
 	.remove_from_distributed_db = dist_util_remove_from_db,
 	.remote_hypertable_info = dist_util_remote_hypertable_info,
 	.validate_as_data_node = validate_data_node_settings,
-	.drop_chunks_on_data_nodes = chunk_drop_remote_chunks,
 	.distributed_exec = ts_dist_cmd_exec,
+	.func_call_on_data_nodes = ts_dist_cmd_func_call_on_data_nodes,
 #endif
 	.cache_syscache_invalidate = cache_syscache_invalidate,
 };

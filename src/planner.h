@@ -8,6 +8,7 @@
 
 #include <postgres.h>
 #include <nodes/pg_list.h>
+#include "export.h"
 
 typedef struct TsFdwRelationInfo TsFdwRelationInfo;
 typedef struct TimescaleDBPrivate
@@ -21,5 +22,7 @@ typedef struct TimescaleDBPrivate
 	Relids server_relids;
 	TsFdwRelationInfo *fdw_relation_info;
 } TimescaleDBPrivate;
+
+extern TSDLLEXPORT bool is_rte_hypertable(RangeTblEntry *rte);
 
 #endif /* TIMESCALEDB_PLANNER_H */

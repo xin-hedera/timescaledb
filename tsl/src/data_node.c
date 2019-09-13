@@ -114,7 +114,7 @@ static bool
 create_foreign_server(const char *const node_name, const char *const host, int32 port,
 					  const char *const dbname, bool if_not_exists, Oid *const oid)
 {
-	ForeignServer *server;
+	ForeignServer *server = NULL;
 	ObjectAddress objaddr;
 	CreateForeignServerStmt stmt = {
 		.type = T_CreateForeignServerStmt,
@@ -166,7 +166,7 @@ create_foreign_server(const char *const node_name, const char *const host, int32
 	}
 
 	if (oid != NULL)
-		*oid = server->serverid;
+		*oid = objaddr.objectId;
 
 	return true;
 }

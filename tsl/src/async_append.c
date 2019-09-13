@@ -124,7 +124,23 @@ get_data_node_async_scan_states(AsyncAppendState *state)
 		elog(ERROR, "unexpected child node of AsyncAppend");
 
 	for (i = 0; i < num_child_plans; i++)
-		dn_plans = lappend(dn_plans, child_plans[i]);
+	{
+		PlanState *state = child_plans[i];
+
+		switch (nodeTag(state))
+		{
+			case T_CustomScanState:
+				dn_plans = lappend(dn_plans, child_plans[i]);
+				break;
+			case T_AggState:
+				/* Data scan state is buried under AggState  */
+				Assert(nodeTag(state->lefttree) == T_CustomScanState);
+				dn_plans = lappend(dn_plans, state->lefttree);
+				break;
+			default:
+				elog(ERROR, "unexpected child node of Append or MergeAppend: %d", nodeTag(state));
+		}
+	}
 
 	return dn_plans;
 }
@@ -358,9 +374,11 @@ path_process(PlannerInfo *root, Path **path)
 		return;
 
 	child = linitial(children);
-	/* sometimes data node scan is buried under ProjectionPath */
+	/* sometimes data node scan is buried under ProjectionPath or AggPath */
 	if (IsA(child, ProjectionPath))
 		child = castNode(ProjectionPath, child)->subpath;
+	else if (IsA(child, AggPath))
+		child = castNode(AggPath, child)->subpath;
 
 	if (!is_data_node_scan_path(child))
 		return;

@@ -17,6 +17,7 @@
 
 #include "catalog.h"
 #include "compat.h"
+#include "cross_module_fn.h"
 #include "dimension.h"
 #include "dimension_slice.h"
 #include "dimension_vector.h"
@@ -1072,24 +1073,19 @@ dimension_add_not_null_on_column(Oid table_relid, char *colname)
 
 	AlterTableInternal(table_relid, list_make1(&cmd), false);
 }
+
 void
-ts_dimension_update(Oid table_relid, Name dimname, DimensionType dimtype, Datum *interval,
+ts_dimension_update(Hypertable *ht, Name dimname, DimensionType dimtype, Datum *interval,
 					Oid *intervaltype, int16 *num_slices, Oid *integer_now_func)
 {
-	Cache *hcache = ts_hypertable_cache_pin();
-	Hypertable *ht;
 	Dimension *dim;
+
+	if (NULL == ht)
+		ereport(ERROR, (errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST), errmsg("invalid hypertable")));
 
 	if (dimtype == DIMENSION_TYPE_ANY)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE), errmsg("invalid dimension type")));
-
-	ht = ts_hypertable_cache_get_entry(hcache, table_relid);
-
-	if (NULL == ht)
-		ereport(ERROR,
-				(errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST),
-				 errmsg("table \"%s\" is not a hypertable", get_rel_name(table_relid))));
 
 	if (NULL == dimname)
 	{
@@ -1097,7 +1093,7 @@ ts_dimension_update(Oid table_relid, Name dimname, DimensionType dimtype, Datum 
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("hypertable \"%s\" has multiple %s dimensions",
-							get_rel_name(table_relid),
+							get_rel_name(ht->main_table_relid),
 							dimtype == DIMENSION_TYPE_OPEN ? "time" : "space"),
 					 errhint("An explicit dimension name needs to be specified")));
 
@@ -1110,7 +1106,7 @@ ts_dimension_update(Oid table_relid, Name dimname, DimensionType dimtype, Datum 
 		ereport(ERROR,
 				(errcode(ERRCODE_TS_DIMENSION_NOT_EXIST),
 				 errmsg("hypertable \"%s\" does not have a matching dimension",
-						get_rel_name(table_relid))));
+						get_rel_name(ht->main_table_relid))));
 
 	Assert(dim->type == dimtype);
 
@@ -1151,8 +1147,6 @@ ts_dimension_update(Oid table_relid, Name dimname, DimensionType dimtype, Datum 
 
 	dimension_scan_update(dim->fd.id, dimension_tuple_update, dim, RowExclusiveLock);
 	ts_hypertable_check_partitioning(ht, dim->fd.id);
-
-	ts_cache_release(hcache);
 }
 
 TS_FUNCTION_INFO_V1(ts_dimension_set_num_slices);
@@ -1193,9 +1187,8 @@ ts_dimension_set_num_slices(PG_FUNCTION_ARGS)
 	 * num_slices cannot be > INT16_MAX.
 	 */
 	num_slices = num_slices_arg & 0xffff;
-
-	ts_dimension_update(table_relid, colname, DIMENSION_TYPE_CLOSED, NULL, NULL, &num_slices, NULL);
-
+	ts_dimension_update(ht, colname, DIMENSION_TYPE_CLOSED, NULL, NULL, &num_slices, NULL);
+	ts_hypertable_func_call_on_data_nodes(ht, fcinfo);
 	ts_cache_release(hcache);
 
 	PG_RETURN_VOID();
@@ -1221,6 +1214,8 @@ ts_dimension_set_interval(PG_FUNCTION_ARGS)
 	Datum interval = PG_GETARG_DATUM(1);
 	Oid intervaltype = InvalidOid;
 	Name colname = PG_ARGISNULL(2) ? NULL : PG_GETARG_NAME(2);
+	Cache *hcache = ts_hypertable_cache_pin();
+	Hypertable *ht;
 
 	if (PG_ARGISNULL(0))
 		ereport(ERROR,
@@ -1229,18 +1224,22 @@ ts_dimension_set_interval(PG_FUNCTION_ARGS)
 
 	ts_hypertable_permissions_check(table_relid, GetUserId());
 
+	ht = ts_hypertable_cache_get_entry(hcache, table_relid);
+
+	if (NULL == ht)
+		ereport(ERROR,
+				(errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST),
+				 errmsg("table \"%s\" is not a hypertable", get_rel_name(table_relid))));
+
 	if (PG_ARGISNULL(1))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("invalid interval: an explicit interval must be specified")));
+
 	intervaltype = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	ts_dimension_update(table_relid,
-						colname,
-						DIMENSION_TYPE_OPEN,
-						&interval,
-						&intervaltype,
-						NULL,
-						NULL);
+	ts_dimension_update(ht, colname, DIMENSION_TYPE_OPEN, &interval, &intervaltype, NULL, NULL);
+	ts_hypertable_func_call_on_data_nodes(ht, fcinfo);
+	ts_cache_release(hcache);
 
 	PG_RETURN_VOID();
 }
@@ -1559,6 +1558,8 @@ ts_dimension_add(PG_FUNCTION_ARGS)
 		/* Check that partitioning is sane */
 		ts_hypertable_check_partitioning(info.ht, dimension_id);
 	}
+
+	ts_hypertable_func_call_on_data_nodes(info.ht, fcinfo);
 
 	retval = dimension_create_datum(fcinfo, &info);
 	ts_cache_release(hcache);

@@ -2266,6 +2266,7 @@ ts_hypertable_set_integer_now_func(PG_FUNCTION_ARGS)
 
 	hcache = ts_hypertable_cache_pin();
 	hypertable = ts_hypertable_cache_get_entry(hcache, table_relid);
+
 	/* First verify that the hypertable corresponds to a valid table */
 	if (hypertable == NULL)
 		ereport(ERROR,
@@ -2299,14 +2300,14 @@ ts_hypertable_set_integer_now_func(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("permission denied for function %s", get_func_name(now_func_oid))));
 
-	ts_dimension_update(table_relid,
+	ts_dimension_update(hypertable,
 						&open_dim->fd.column_name,
 						DIMENSION_TYPE_OPEN,
 						NULL,
 						NULL,
 						NULL,
 						&now_func_oid);
-
+	ts_hypertable_func_call_on_data_nodes(hypertable, fcinfo);
 	ts_cache_release(hcache);
 	PG_RETURN_NULL();
 }
@@ -2578,4 +2579,11 @@ ts_hypertable_get_type(Hypertable *ht)
 	if (ht->fd.replication_factor < 1)
 		return (HypertableType) ht->fd.replication_factor;
 	return HYPERTABLE_DISTRIBUTED;
+}
+
+void
+ts_hypertable_func_call_on_data_nodes(Hypertable *ht, FunctionCallInfo fcinfo)
+{
+	if (hypertable_is_distributed(ht))
+		ts_cm_functions->func_call_on_data_nodes(fcinfo, ts_hypertable_get_data_node_name_list(ht));
 }

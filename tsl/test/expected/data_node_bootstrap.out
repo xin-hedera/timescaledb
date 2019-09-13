@@ -75,7 +75,7 @@ SELECT extname, usename AS owner, extversion
  WHERE extname = 'timescaledb';
    extname   |       owner        | extversion 
 -------------+--------------------+------------
- timescaledb | cluster_super_user | 1.4.0-dev
+ timescaledb | cluster_super_user | 1.5.0-dev
 (1 row)
 
 -- This should not show any rows since delete_data_node clear the

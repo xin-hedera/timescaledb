@@ -79,6 +79,7 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     remote_txn_id.sql
     data_node.sql
     data_node_bootstrap.sql
+    debug_notice.sql
     dist_commands.sql
     deparse.sql
     deparse_fail.sql

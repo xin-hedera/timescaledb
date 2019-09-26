@@ -155,7 +155,7 @@ begin_foreign_scan(ForeignScanState *node, int eflags)
 {
 	ForeignScan *fsplan = (ForeignScan *) node->ss.ps.plan;
 
-	if (eflags & EXEC_FLAG_EXPLAIN_ONLY)
+	if ((eflags & EXEC_FLAG_EXPLAIN_ONLY) && !ts_guc_enable_remote_explain)
 		return;
 
 	node->fdw_state = (TsFdwScanState *) palloc0(sizeof(TsFdwScanState));
@@ -274,7 +274,7 @@ explain_foreign_scan(ForeignScanState *node, struct ExplainState *es)
 {
 	List *fdw_private = ((ForeignScan *) node->ss.ps.plan)->fdw_private;
 
-	fdw_scan_explain(&node->ss, fdw_private, es);
+	fdw_scan_explain(&node->ss, fdw_private, es, (TsFdwScanState *) node->fdw_state);
 }
 
 static void

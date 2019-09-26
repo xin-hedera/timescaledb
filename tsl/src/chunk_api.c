@@ -415,11 +415,12 @@ chunk_api_create_on_data_nodes(Chunk *chunk, Hypertable *ht)
 	{
 		PGresult *pgres = async_response_result_get_pg_result(res);
 		ChunkDataNode *cdn = async_response_result_get_user_data(res);
-		Datum values[tupdesc->natts];
-		bool nulls[tupdesc->natts];
+		Datum values[Natts_create_chunk];
+		bool nulls[Natts_create_chunk];
 		const char *schema_name, *table_name;
 		bool created;
 
+		Assert(Natts_create_chunk == tupdesc->natts);
 		get_result_datums(values, nulls, tupdesc->natts, attinmeta, pgres);
 
 		created = DatumGetBool(values[AttrNumberGetAttrOffset(Anum_create_chunk_created)]);

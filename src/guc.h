@@ -38,6 +38,14 @@ extern TSDLLEXPORT char *ts_guc_ssl_dir;
 extern TSDLLEXPORT char *ts_guc_passfile;
 extern TSDLLEXPORT bool ts_guc_enable_remote_explain;
 
+typedef enum DataFetcherType
+{
+	CursorFetcherType,
+	RowByRowFetcherType
+} DataFetcherType;
+
+extern TSDLLEXPORT DataFetcherType ts_guc_remote_data_fetcher;
+
 #ifdef TS_DEBUG
 extern bool ts_shutdown_bgw;
 #else

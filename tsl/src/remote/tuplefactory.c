@@ -56,6 +56,7 @@ typedef struct TupleFactory
 	AttConvInMetadata *attconv;
 	ConversionLocation errpos;
 	ErrorContextCallback errcallback;
+	bool per_tuple_mctx_reset;
 } TupleFactory;
 
 /*
@@ -145,7 +146,7 @@ tuplefactory_create_common(TupleDesc tupdesc, List *retrieved_attrs, bool force_
 
 	tf->temp_mctx = AllocSetContextCreate(CurrentMemoryContext,
 										  "tuple factory temporary data",
-										  ALLOCSET_SMALL_SIZES);
+										  ALLOCSET_DEFAULT_SIZES);
 
 	tf->tupdesc = tupdesc;
 	tf->retrieved_attrs = retrieved_attrs;
@@ -195,6 +196,7 @@ tuplefactory_create(Relation rel, ScanState *ss, List *retrieved_attrs)
 	tf->errcallback.callback = conversion_error_callback;
 	tf->errcallback.arg = (void *) &tf->errpos;
 	tf->errcallback.previous = error_context_stack;
+	tf->per_tuple_mctx_reset = true;
 
 	return tf;
 }
@@ -217,8 +219,20 @@ tuplefactory_is_binary(TupleFactory *tf)
 	return tf->attconv->binary;
 }
 
+void
+tuplefactory_set_per_tuple_mctx_reset(TupleFactory *tf, bool reset)
+{
+	tf->per_tuple_mctx_reset = reset;
+}
+
+void
+tuplefactory_reset_mctx(TupleFactory *tf)
+{
+	MemoryContextReset(tf->temp_mctx);
+}
+
 HeapTuple
-tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row)
+tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row, int format)
 {
 	HeapTuple tuple;
 	ItemPointer ctid = NULL;
@@ -226,7 +240,6 @@ tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row)
 	MemoryContext oldcontext;
 	ListCell *lc;
 	int j;
-	int format;
 	StringInfo buf;
 
 	Assert(row < PQntuples(res));
@@ -237,7 +250,6 @@ tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row)
 	 * cruft the I/O functions might leak.
 	 */
 	oldcontext = MemoryContextSwitchTo(tf->temp_mctx);
-
 	buf = makeStringInfo();
 
 	/* Install error callback */
@@ -257,17 +269,16 @@ tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row)
 		char *valstr;
 
 		resetStringInfo(buf);
-		/* fetch next column's value */
-		if (PQgetisnull(res, row, j))
+
+		buf->len = PQgetlength(res, row, j);
+		/* we assume that value is NULL is length is 0 */
+		if (buf->len == 0)
 			valstr = NULL;
 		else
 		{
 			valstr = PQgetvalue(res, row, j);
 			buf->data = valstr;
 		}
-
-		format = PQfformat(res, j);
-		buf->len = PQgetlength(res, row, j);
 
 		/*
 		 * convert value to internal representation
@@ -379,7 +390,8 @@ tuplefactory_make_tuple(TupleFactory *tf, PGresult *res, int row)
 		HeapTupleSetOid(tuple, oid);
 
 	/* Clean up */
-	MemoryContextReset(tf->temp_mctx);
+	if (tf->per_tuple_mctx_reset)
+		MemoryContextReset(tf->temp_mctx);
 
 	return tuple;
 }

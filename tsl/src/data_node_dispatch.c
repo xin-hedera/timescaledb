@@ -343,7 +343,7 @@ store_returning_result(DataNodeDispatchState *sds, int row, TupleTableSlot *slot
 {
 	PG_TRY();
 	{
-		HeapTuple newtup = tuplefactory_make_tuple(sds->tupfactory, res, row);
+		HeapTuple newtup = tuplefactory_make_tuple(sds->tupfactory, res, row, PQbinaryTuples(res));
 
 		/* tuple will be deleted when it is cleared from the slot */
 		ExecStoreTuple(newtup, slot, InvalidBuffer, true);

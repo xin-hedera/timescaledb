@@ -73,6 +73,7 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     remote_copy.sql
     dist_util.sql
     telemetry_distributed.sql
+    data_fetcher.sql
   )
 endif ()
 

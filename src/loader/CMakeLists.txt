@@ -7,6 +7,10 @@ set(SOURCES
   lwlocks.c
 )
 
+if (NOT ${PG_VERSION} VERSION_LESS "11")
+  list(APPEND SOURCES seclabel.c)
+endif()
+
 set(TEST_SOURCES
   ${PROJECT_SOURCE_DIR}/test/src/symbol_conflict.c
 )

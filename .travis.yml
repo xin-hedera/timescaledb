@@ -37,7 +37,7 @@ script:
   # Now run all tests
   - ${RETRY_PREFIX} docker exec -u postgres -it pgbuild /bin/sh -c "make -k -C /build/debug installcheck PG_REGRESS_OPTS='--temp-instance=/tmp/pgdata'"
   # Run the PG regression tests too
-  - ${RETRY_PREFIX} docker exec -u postgres -it pgbuild /bin/sh -c "make -C /build/debug pginstallcheck PG_REGRESS_OPTS='--temp-instance=/tmp/pgdata'"
+  - ${RETRY_PREFIX} docker exec -u postgres -it pgbuild /bin/sh -c "make -C /build/debug pginstallcheck IGNORES='security_label' PG_REGRESS_OPTS='--temp-instance=/tmp/pgdata'"
 after_failure:
   - docker exec -u postgres -it pgbuild find /build -name regression.diffs -exec cat {} +
   - docker exec -u postgres -it pgbuild find /build -name postmaster.log -exec cat {} +

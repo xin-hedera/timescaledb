@@ -19,6 +19,7 @@
 #include <miscadmin.h>
 #include "compat.h"
 #include <utils/builtins.h>
+#include "loader/seclabel.h"
 
 /*
  * When added to a distributed database, this key in the metadata table will be set to match the
@@ -65,6 +66,14 @@ void
 dist_util_set_as_frontend()
 {
 	dist_util_set_id(ts_telemetry_metadata_get_uuid());
+
+	/*
+	 * Set security label to mark current database as the access node database.
+	 *
+	 * Presence of this label is used as a flag to send NOTICE messsage
+	 * after a DROP DATABASE operation completion.
+	 */
+	ts_seclabel_set_dist_uuid(MyDatabaseId, local_get_dist_id(NULL));
 }
 
 bool

@@ -26,7 +26,10 @@ void (*testing_callback_call_hook)(const char *event) = NULL;
 
 #else
 
-#define testing_callback_call(event)
+#define testing_callback_call(event)                                                               \
+	do                                                                                             \
+	{                                                                                              \
+	} while (0)
 
 #endif
 

@@ -70,7 +70,7 @@ ts_dist_cmd_collect_responses(List *requests)
  * server OIDs.
  */
 DistCmdResult *
-ts_dist_cmd_invoke_on_data_nodes(const char *sql, List *data_nodes)
+ts_dist_cmd_invoke_on_data_nodes(const char *sql, List *data_nodes, bool transactional)
 {
 	ListCell *lc;
 	List *requests = NIL;
@@ -95,7 +95,8 @@ ts_dist_cmd_invoke_on_data_nodes(const char *sql, List *data_nodes)
 	foreach (lc, data_nodes)
 	{
 		const char *node_name = lfirst(lc);
-		TSConnection *connection = data_node_get_connection(node_name, REMOTE_TXN_NO_PREP_STMT);
+		TSConnection *connection =
+			data_node_get_connection(node_name, REMOTE_TXN_NO_PREP_STMT, transactional);
 
 		AsyncRequest *req = async_request_send(connection, sql);
 
@@ -111,7 +112,7 @@ ts_dist_cmd_invoke_on_data_nodes(const char *sql, List *data_nodes)
 
 DistCmdResult *
 ts_dist_cmd_invoke_on_data_nodes_using_search_path(const char *sql, const char *search_path,
-												   List *node_names)
+												   List *node_names, bool transactional)
 {
 	DistCmdResult *set_result;
 	DistCmdResult *results;
@@ -121,18 +122,20 @@ ts_dist_cmd_invoke_on_data_nodes_using_search_path(const char *sql, const char *
 	{
 		char *set_request = psprintf("SET search_path = %s, pg_catalog", search_path);
 
-		set_result = ts_dist_cmd_invoke_on_data_nodes(set_request, node_names);
+		set_result = ts_dist_cmd_invoke_on_data_nodes(set_request, node_names, transactional);
 		if (set_result)
 			ts_dist_cmd_close_response(set_result);
 
 		pfree(set_request);
 	}
 
-	results = ts_dist_cmd_invoke_on_data_nodes(sql, node_names);
+	results = ts_dist_cmd_invoke_on_data_nodes(sql, node_names, transactional);
 
 	if (set_search_path)
 	{
-		set_result = ts_dist_cmd_invoke_on_data_nodes("SET search_path = pg_catalog", node_names);
+		set_result = ts_dist_cmd_invoke_on_data_nodes("SET search_path = pg_catalog",
+													  node_names,
+													  transactional);
 		if (set_result)
 			ts_dist_cmd_close_response(set_result);
 	}
@@ -143,7 +146,7 @@ ts_dist_cmd_invoke_on_data_nodes_using_search_path(const char *sql, const char *
 DistCmdResult *
 ts_dist_cmd_invoke_on_all_data_nodes(const char *sql)
 {
-	return ts_dist_cmd_invoke_on_data_nodes(sql, data_node_get_node_name_list());
+	return ts_dist_cmd_invoke_on_data_nodes(sql, data_node_get_node_name_list(), true);
 }
 
 /*
@@ -157,14 +160,15 @@ ts_dist_cmd_invoke_func_call_on_data_nodes(FunctionCallInfo fcinfo, List *data_n
 	if (NIL == data_nodes)
 		data_nodes = data_node_get_node_name_list();
 
-	return ts_dist_cmd_invoke_on_data_nodes(deparse_func_call(fcinfo), data_nodes);
+	return ts_dist_cmd_invoke_on_data_nodes(deparse_func_call(fcinfo), data_nodes, true);
 }
 
 DistCmdResult *
 ts_dist_cmd_invoke_func_call_on_all_data_nodes(FunctionCallInfo fcinfo)
 {
 	return ts_dist_cmd_invoke_on_data_nodes(deparse_func_call(fcinfo),
-											data_node_get_node_name_list());
+											data_node_get_node_name_list(),
+											true);
 }
 
 /*
@@ -225,7 +229,7 @@ ts_dist_cmd_prepare_command(const char *sql, size_t n_params, List *node_names)
 	foreach (lc, node_names)
 	{
 		const char *name = lfirst(lc);
-		TSConnection *connection = data_node_get_connection(name, REMOTE_TXN_USE_PREP_STMT);
+		TSConnection *connection = data_node_get_connection(name, REMOTE_TXN_USE_PREP_STMT, true);
 		DistPreparedStmt *cmd = palloc(sizeof(DistPreparedStmt));
 		AsyncRequest *ar = async_request_send_prepare(connection, sql, n_params);
 
@@ -303,7 +307,8 @@ ts_dist_cmd_exec(PG_FUNCTION_ARGS)
 
 	result = ts_dist_cmd_invoke_on_data_nodes_using_search_path(query,
 																namespace_search_path,
-																data_node_list);
+																data_node_list,
+																true);
 	if (result)
 		ts_dist_cmd_close_response(result);
 

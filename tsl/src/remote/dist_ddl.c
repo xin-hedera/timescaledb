@@ -24,6 +24,8 @@ typedef enum
 	DIST_DDL_EXEC_NONE,
 	/* Execute on start hook */
 	DIST_DDL_EXEC_ON_START,
+	/* Execute on start hook without using a transactions */
+	DIST_DDL_EXEC_ON_START_NO_2PC,
 	/* Execute on end hook */
 	DIST_DDL_EXEC_ON_END
 } DistDDLExecType;
@@ -158,17 +160,12 @@ dist_ddl_check_session(void)
 static DistDDLExecType
 dist_ddl_process_vacuum(VacuumStmt *stmt)
 {
-	/* let analyze through */
-	if (stmt->options & VACOPT_ANALYZE)
-		return DIST_DDL_EXEC_NONE;
+	/* We do not support VERBOSE flag since it will require to print data
+	 * returned from the data nodes */
+	if (stmt->options & VACOPT_VERBOSE)
+		dist_ddl_error_raise_unsupported();
 
-	/* VACCUM currently unsupported. A VACCUM cannot run inside a transaction
-	 * block. Unfortunately, we currently execute all distributed DDL inside a
-	 * distributed transaction. We need to add a way to run some DDL commands
-	 * across "raw" connections. */
-	dist_ddl_error_raise_unsupported();
-
-	return DIST_DDL_EXEC_ON_START;
+	return DIST_DDL_EXEC_ON_START_NO_2PC;
 }
 
 static void
@@ -385,7 +382,7 @@ dist_ddl_preprocess(ProcessUtilityArgs *args)
 }
 
 static void
-dist_ddl_execute(void)
+dist_ddl_execute(bool transactional)
 {
 	DistCmdResult *result;
 
@@ -394,7 +391,8 @@ dist_ddl_execute(void)
 	{
 		result = ts_dist_cmd_invoke_on_data_nodes_using_search_path(dist_ddl_state.query_string,
 																	namespace_search_path,
-																	dist_ddl_state.data_node_list);
+																	dist_ddl_state.data_node_list,
+																	transactional);
 		if (result)
 			ts_dist_cmd_close_response(result);
 	}
@@ -427,8 +425,18 @@ dist_ddl_start(ProcessUtilityArgs *args)
 		dist_ddl_state.mctx = CurrentMemoryContext;
 	}
 
-	if (dist_ddl_state.exec_type == DIST_DDL_EXEC_ON_START)
-		dist_ddl_execute();
+	switch (dist_ddl_state.exec_type)
+	{
+		case DIST_DDL_EXEC_ON_START:
+			dist_ddl_execute(true);
+			break;
+		case DIST_DDL_EXEC_ON_START_NO_2PC:
+			dist_ddl_execute(false);
+			break;
+		case DIST_DDL_EXEC_ON_END:
+		case DIST_DDL_EXEC_NONE:
+			break;
+	}
 }
 
 void
@@ -458,7 +466,7 @@ dist_ddl_end(EventTriggerData *command)
 	}
 
 	/* Execute command on remote data nodes. */
-	dist_ddl_execute();
+	dist_ddl_execute(true);
 }
 
 static bool

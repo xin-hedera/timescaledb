@@ -498,6 +498,7 @@ mattablecolumninfo_get_partial_select_query(MatTableColumnInfo *mattblinfo, Quer
 	partial_selquery->sortClause = NULL;
 	return partial_selquery;
 }
+
 /* create a  view for the query using the SELECt stmt sqlquery
  * and view name from RangeVar viewrel
  */
@@ -1091,6 +1092,7 @@ mattablecolumninfo_init(MatTableColumnInfo *matcolinfo, List *collist, List *tli
 	matcolinfo->matpartcolno = -1;
 	matcolinfo->matpartcolname = NULL;
 }
+
 /*
  * Add Information required to create and populate the materialization table
  * columns
@@ -1463,6 +1465,7 @@ finalizequery_init(FinalizeQueryInfo *inp, Query *orig_query, MatTableColumnInfo
 	inp->final_havingqual =
 		expression_tree_mutator((Node *) newhavingQual, add_aggregate_partialize_mutator, &cxt);
 }
+
 /* Create select query with the finalize aggregates
  * for the materialization table
  * matcollist - column list for mat table

@@ -4,6 +4,17 @@
 `psql` with the `-X` flag to prevent any `.psqlrc` commands from
 accidentally triggering the load of a previous DB version.**
 
+## 2.0.0-beta2 (2019-10-22)
+
+**For beta releases**, upgrading from an earlier version of the
+extension (including previous beta releases) is not supported.
+
+This release introduces *distributed hypertables*, a major new
+feature that allows hypertables to scale out across multiple nodes for
+increased performance and fault tolerance. Please review the
+documentation to learn how to configure and use distributed
+hypertables and what current limitations are.
+
 ## 1.5.0 (2019-10-31)
 
 This release adds major new features and bugfixes since the 1.4.2 release.

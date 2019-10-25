@@ -705,12 +705,16 @@ ts_hypertable_lock_tuple_simple(Oid table_relid)
 					 errmsg("hypertable \"%s\" has already been updated by another transaction",
 							get_rel_name(table_relid)),
 					 errhint("Retry the operation again")));
+			/* Return here to silence compiler */
+			return false;
 		case HeapTupleBeingUpdated:
 			ereport(ERROR,
 					(errcode(ERRCODE_LOCK_NOT_AVAILABLE),
 					 errmsg("hypertable \"%s\" is being updated by another transaction",
 							get_rel_name(table_relid)),
 					 errhint("Retry the operation again")));
+			/* Return here to silence compiler */
+			return false;
 		case HeapTupleWouldBlock:
 			/* Locking would block. Let caller decide what to do */
 			return false;

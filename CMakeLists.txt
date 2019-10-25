@@ -267,6 +267,7 @@ find_path(PG_SOURCE_DIR
 
 if (PG_SOURCE_DIR)
   message(STATUS "Found PostgreSQL source in ${PG_SOURCE_DIR}")
+  include_directories(BEFORE ${PG_SOURCE_DIR}/src/include ${PG_SOURCE_DIR}/src/interfaces ${PG_SOURCE_DIR}/src/interfaces/libpq)
 endif (PG_SOURCE_DIR)
 
 set(EXT_CONTROL_FILE ${PROJECT_NAME}.control)

@@ -300,7 +300,7 @@ INFO:  Telemetry is disabled. Call get_telemetry_report(always_display_report :=
 (1 row)
 
 SELECT * FROM json_object_keys(get_telemetry_report(always_display_report := true)::json) AS key
-WHERE key != 'os_name_pretty';
+WHERE key != 'os_name_pretty' and key != 'distributed_db';
              key             
 -----------------------------
  db_uuid
@@ -339,7 +339,7 @@ WHERE key != 'os_name_pretty';
 -- Test telemetry report contents
 SET timescaledb.telemetry_level=basic;
 SELECT * FROM json_object_keys(get_telemetry_report()::json) AS key
-WHERE key != 'os_name_pretty';
+WHERE key != 'os_name_pretty' and key != 'distributed_db';
              key             
 -----------------------------
  db_uuid

@@ -91,6 +91,7 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     remote_stmt_params.sql
     remote_copy.sql
     dist_util.sql
+    telemetry_distributed.sql
   )
 endif ()
 

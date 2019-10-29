@@ -127,13 +127,13 @@ SET timescaledb.telemetry_level=off;
 SELECT get_telemetry_report();
 SELECT get_telemetry_report(NULL);
 SELECT * FROM json_object_keys(get_telemetry_report(always_display_report := true)::json) AS key
-WHERE key != 'os_name_pretty';
+WHERE key != 'os_name_pretty' and key != 'distributed_db';
 
 -- Test telemetry report contents
 SET timescaledb.telemetry_level=basic;
 
 SELECT * FROM json_object_keys(get_telemetry_report()::json) AS key
-WHERE key != 'os_name_pretty';
+WHERE key != 'os_name_pretty' and key != 'distributed_db';
 
 -- check telemetry picks up flagged content from metadata
 SELECT json_object_field(get_telemetry_report()::json,'db_metadata');

@@ -1108,11 +1108,17 @@ char *
 ts_hypertable_select_tablespace_name(Hypertable *ht, Chunk *chunk)
 {
 	Tablespace *tspc = ts_hypertable_select_tablespace(ht, chunk);
+	Oid main_tspc_oid;
 
-	if (NULL == tspc)
-		return NULL;
+	if (tspc != NULL)
+		return NameStr(tspc->fd.tablespace_name);
 
-	return NameStr(tspc->fd.tablespace_name);
+	/* Use main table tablespace, if any */
+	main_tspc_oid = get_rel_tablespace(ht->main_table_relid);
+	if (OidIsValid(main_tspc_oid))
+		return get_tablespace_name(main_tspc_oid);
+
+	return NULL;
 }
 
 /*
@@ -2023,7 +2029,7 @@ ts_hypertable_create_from_info(Oid table_relid, int32 hypertable_id, uint32 flag
 	ts_indexing_verify_indexes(ht);
 
 	/* Attach tablespace, if any */
-	if (OidIsValid(tspc_oid))
+	if (OidIsValid(tspc_oid) && !hypertable_is_distributed(ht))
 	{
 		NameData tspc_name;
 

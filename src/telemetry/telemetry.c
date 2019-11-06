@@ -182,13 +182,13 @@ get_size(int64 size)
 static char *
 get_num_hypertables()
 {
-//	HypertablesStat stat;
+	//	HypertablesStat stat;
 	StringInfo buf = makeStringInfo();
 
-//	memset(&stat, 0, sizeof(stat));
-//	ts_number_of_hypertables(&stat);
-//
-//	appendStringInfo(buf, "%d", stat.num_hypertables_total);
+	//	memset(&stat, 0, sizeof(stat));
+	//	ts_number_of_hypertables(&stat);
+	//
+	//	appendStringInfo(buf, "%d", stat.num_hypertables_total);
 
 	appendStringInfo(buf, "%d", ts_number_of_user_hypertables());
 	return buf->data;

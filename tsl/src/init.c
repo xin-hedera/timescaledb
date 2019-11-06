@@ -35,12 +35,12 @@
 #include "compat.h"
 #include "hypertable.h"
 
-#if PG11_GE
 #include "process_utility.h"
 #include "hypertable.h"
 #include "compression/create.h"
 #include "compression/compress_utils.h"
 #include "compression/segment_meta.h"
+#if PG11_GE
 #include "data_node.h"
 #include "chunk.h"
 #include "fdw/fdw.h"

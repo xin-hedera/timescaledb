@@ -139,6 +139,7 @@ typedef struct CrossModuleFunctions
 	void (*func_call_on_data_nodes)(FunctionCallInfo fcinfo, List *data_nodes);
 	PGFunction distributed_exec;
 	PGFunction get_chunk_relstats;
+	PGFunction get_chunk_colstats;
 } CrossModuleFunctions;
 
 extern TSDLLEXPORT CrossModuleFunctions *ts_cm_functions;

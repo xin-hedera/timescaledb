@@ -23,7 +23,7 @@ ts_seclabel_set_dist_uuid(Oid dbid, Datum dist_uuid)
 }
 
 bool
-seclabel_get_dist_uuid(Oid dbid, char **uuid)
+ts_seclabel_get_dist_uuid(Oid dbid, char **uuid)
 {
 	ObjectAddress dbobj;
 	char *uuid_ptr;
@@ -49,7 +49,7 @@ seclabel_provider(const ObjectAddress *object, const char *seclabel)
 }
 
 void
-seclabel_init(void)
+ts_seclabel_init(void)
 {
 	register_label_provider(SECLABEL_DIST_PROVIDER, seclabel_provider);
 }

@@ -498,7 +498,7 @@ loader_process_utility_hook(PlannedStmt *pstmt, const char *query_string,
 			Oid dboid = get_database_oid(stmt->dbname, stmt->missing_ok);
 
 			if (OidIsValid(dboid))
-				is_distributed_database = seclabel_get_dist_uuid(dboid, &dist_uuid);
+				is_distributed_database = ts_seclabel_get_dist_uuid(dboid, &dist_uuid);
 			break;
 		}
 		case T_SecLabelStmt:
@@ -570,7 +570,7 @@ _PG_init(void)
 	ts_bgw_counter_setup_gucs();
 	ts_bgw_interface_register_api_version();
 #if PG11_GE
-	seclabel_init();
+	ts_seclabel_init();
 #endif
 
 	/* This is a safety-valve variable to prevent loading the full extension */

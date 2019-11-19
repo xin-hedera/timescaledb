@@ -80,7 +80,7 @@ mark_rte_hypertable_parent(RangeTblEntry *rte)
 }
 
 TSDLLEXPORT bool
-is_rte_hypertable(RangeTblEntry *rte)
+ts_is_rte_hypertable(RangeTblEntry *rte)
 {
 	return rte->ctename != NULL && strcmp(rte->ctename, CTE_NAME_HYPERTABLES) == 0;
 }
@@ -513,7 +513,7 @@ timescaledb_get_relation_info_hook(PlannerInfo *root, Oid relation_objectid, boo
 	 * run on many chunks so the expansion really cannot be called before this
 	 * hook.
 	 */
-	if (!rte->inh && is_rte_hypertable(rte))
+	if (!rte->inh && ts_is_rte_hypertable(rte))
 	{
 		Cache *hcache = ts_hypertable_cache_pin();
 		Hypertable *ht = ts_hypertable_cache_get_entry(hcache, rte->relid);
@@ -567,7 +567,7 @@ involves_ts_hypertable_relid(PlannerInfo *root, Index relid)
 	if (relid == 0)
 		return false;
 
-	return is_rte_hypertable(planner_rt_fetch(relid, root));
+	return ts_is_rte_hypertable(planner_rt_fetch(relid, root));
 }
 
 static bool

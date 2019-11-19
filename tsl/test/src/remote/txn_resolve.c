@@ -10,8 +10,8 @@
 #include "export.h"
 #include "test_utils.h"
 
-TS_FUNCTION_INFO_V1(tsl_test_remote_txn_resolve_create_records);
-TS_FUNCTION_INFO_V1(tsl_test_remote_txn_resolve_create_records_with_concurrent_heal);
+TS_FUNCTION_INFO_V1(ts_test_remote_txn_resolve_create_records);
+TS_FUNCTION_INFO_V1(ts_test_remote_txn_resolve_create_records_with_concurrent_heal);
 
 static RemoteTxn *
 prepared_txn(TSConnectionId *id, const char *sql)
@@ -49,7 +49,7 @@ create_rollback_prepared_txn(TSConnectionId *id)
 }
 
 Datum
-tsl_test_remote_txn_resolve_create_records(PG_FUNCTION_ARGS)
+ts_test_remote_txn_resolve_create_records(PG_FUNCTION_ARGS)
 {
 	TSConnectionId id;
 
@@ -95,7 +95,7 @@ create_commited_txn_with_concurrent_heal(TSConnectionId *id)
 }
 
 Datum
-tsl_test_remote_txn_resolve_create_records_with_concurrent_heal(PG_FUNCTION_ARGS)
+ts_test_remote_txn_resolve_create_records_with_concurrent_heal(PG_FUNCTION_ARGS)
 {
 	TSConnectionId id = { .server_id = GetForeignServerByName("loopback2", false)->serverid,
 						  .user_id = GetUserId() };

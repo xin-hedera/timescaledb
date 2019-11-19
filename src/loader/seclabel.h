@@ -18,7 +18,7 @@
 #define SECLABEL_DIST_PROVIDER "timescaledb"
 
 extern TSDLLEXPORT void ts_seclabel_set_dist_uuid(Oid dbid, Datum dist_uuid);
-extern bool seclabel_get_dist_uuid(Oid dbid, char **uuid);
-extern void seclabel_init(void);
+extern bool ts_seclabel_get_dist_uuid(Oid dbid, char **uuid);
+extern void ts_seclabel_init(void);
 
 #endif /* TIMESCALEDB_SECLABEL_H */

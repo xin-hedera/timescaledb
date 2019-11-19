@@ -11,8 +11,8 @@
 #include <remote/dist_commands.h>
 #include <data_node.h>
 
-TS_FUNCTION_INFO_V1(tsl_invoke_distributed_commands);
-TS_FUNCTION_INFO_V1(tsl_invoke_faulty_distributed_command);
+TS_FUNCTION_INFO_V1(ts_invoke_distributed_commands);
+TS_FUNCTION_INFO_V1(ts_invoke_faulty_distributed_command);
 
 #define LOG_PG_STATUS(RESULT, TARGET)                                                              \
 	elog(INFO,                                                                                     \
@@ -21,7 +21,7 @@ TS_FUNCTION_INFO_V1(tsl_invoke_faulty_distributed_command);
 		 PQresStatus(PQresultStatus(ts_dist_cmd_get_result_by_node_name(RESULT, TARGET))));
 
 Datum
-tsl_invoke_distributed_commands(PG_FUNCTION_ARGS)
+ts_invoke_distributed_commands(PG_FUNCTION_ARGS)
 {
 	List *data_nodes = data_node_get_node_name_list_with_aclcheck(ACL_USAGE, true);
 	List *subset_nodes;
@@ -85,7 +85,7 @@ tsl_invoke_distributed_commands(PG_FUNCTION_ARGS)
 }
 
 Datum
-tsl_invoke_faulty_distributed_command(PG_FUNCTION_ARGS)
+ts_invoke_faulty_distributed_command(PG_FUNCTION_ARGS)
 {
 	ts_dist_cmd_invoke_on_all_data_nodes(
 		"INSERT INTO public.disttable2 VALUES (CURRENT_TIMESTAMP, 42, 72.5);");

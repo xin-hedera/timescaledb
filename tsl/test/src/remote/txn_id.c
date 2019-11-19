@@ -11,7 +11,7 @@
 #include "export.h"
 #include "test_utils.h"
 
-TS_FUNCTION_INFO_V1(tsl_test_remote_txn_id);
+TS_FUNCTION_INFO_V1(ts_test_remote_txn_id);
 static void
 test_basic_in_out()
 {
@@ -35,7 +35,7 @@ test_basic_in_out()
 }
 
 Datum
-tsl_test_remote_txn_id(PG_FUNCTION_ARGS)
+ts_test_remote_txn_id(PG_FUNCTION_ARGS)
 {
 	test_basic_in_out();
 	PG_RETURN_VOID();

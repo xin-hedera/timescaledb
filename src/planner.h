@@ -24,6 +24,6 @@ typedef struct TimescaleDBPrivate
 	TsFdwRelationInfo *fdw_relation_info;
 } TimescaleDBPrivate;
 
-extern TSDLLEXPORT bool is_rte_hypertable(RangeTblEntry *rte);
+extern TSDLLEXPORT bool ts_is_rte_hypertable(RangeTblEntry *rte);
 
 #endif /* TIMESCALEDB_PLANNER_H */

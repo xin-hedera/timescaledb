@@ -25,8 +25,8 @@
 #include "export.h"
 #include "test_utils.h"
 
-TS_FUNCTION_INFO_V1(tsl_test_remote_connection_cache);
-TS_FUNCTION_INFO_V1(tsl_test_alter_data_node);
+TS_FUNCTION_INFO_V1(ts_test_remote_connection_cache);
+TS_FUNCTION_INFO_V1(ts_test_alter_data_node);
 
 static void
 test_basic_cache()
@@ -82,7 +82,7 @@ test_basic_cache()
  * process_utility blocks on altering servers.
  */
 Datum
-tsl_test_alter_data_node(PG_FUNCTION_ARGS)
+ts_test_alter_data_node(PG_FUNCTION_ARGS)
 {
 	AlterForeignServerStmt stmt = {
 		.type = T_AlterForeignServerStmt,
@@ -198,7 +198,7 @@ test_remove()
 }
 
 Datum
-tsl_test_remote_connection_cache(PG_FUNCTION_ARGS)
+ts_test_remote_connection_cache(PG_FUNCTION_ARGS)
 {
 	test_basic_cache();
 	test_invalidate_server();

@@ -39,7 +39,7 @@ is_dist_hypertable_involved(PlannerInfo *root)
 		RangeTblEntry *rte = root->simple_rte_array[rti];
 		Hypertable *ht;
 
-		if (!is_rte_hypertable(rte))
+		if (!ts_is_rte_hypertable(rte))
 			continue;
 
 		ht = ts_hypertable_cache_get_entry(hcache, rte->relid);

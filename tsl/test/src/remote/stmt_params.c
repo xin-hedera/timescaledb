@@ -10,10 +10,10 @@
 #include "remote/data_format.h"
 #include "remote/stmt_params.h"
 
-TS_FUNCTION_INFO_V1(tsl_test_stmt_params_format);
+TS_FUNCTION_INFO_V1(ts_test_stmt_params_format);
 
 Datum
-tsl_test_stmt_params_format(PG_FUNCTION_ARGS)
+ts_test_stmt_params_format(PG_FUNCTION_ARGS)
 {
 	StmtParams *params;
 	const int *formats;

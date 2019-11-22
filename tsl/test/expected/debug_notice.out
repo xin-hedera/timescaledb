@@ -75,19 +75,107 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;
-DEBUG:  In tsl_set_rel_pathlist:
-RELOPTINFO [BASEREL] (names: hyper): rows=36 width=20
-	path list:
-	Append [parents: hyper] rows=36 cost=100.00..415.34
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..128.79
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=18 cost=100.00..157.58
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..128.79
-	MergeAppend [parents: hyper] rows=36 cost=300.02..421.37 has pathkeys
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..130.22 has pathkeys
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=18 cost=100.00..160.44 has pathkeys
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..130.22 has pathkeys
+DEBUG:  RELOPTINFO [rel name: _timescaledb_internal._hyper_1_8_dist_chunk hyper, type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+
+DEBUG:  RELOPTINFO [rel name: _timescaledb_internal._hyper_1_9_dist_chunk hyper, type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+
+DEBUG:  RELOPTINFO [rel name: _timescaledb_internal._hyper_1_10_dist_chunk hyper, type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+
+DEBUG:  RELOPTINFO [rel name: _timescaledb_internal._hyper_1_11_dist_chunk hyper, type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..138.09
+	ForeignScan [rel type: FOREIGN_TABLE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..139.99 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+
+DEBUG:  RELOPTINFO [rel name: public.hyper, type: DATA_NODE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+Cheapest parameterized paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+Cheapest startup path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+Cheapest total path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+
+DEBUG:  RELOPTINFO [rel name: public.hyper, type: DATA_NODE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=18 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..160.44 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..160.44 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+Cheapest parameterized paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+
+Cheapest startup path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+
+Cheapest total path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+
+
+DEBUG:  RELOPTINFO [rel name: public.hyper, type: DATA_NODE, kind: OTHER_MEMBER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+
+Cheapest parameterized paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+Cheapest startup path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+Cheapest total path:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+
+
+DEBUG:  RELOPTINFO [rel name: public.hyper, type: HYPERTABLE, kind: BASEREL, base rel names: hyper] rows=36 width=20
+Path list:
+	Append [rel type: HYPERTABLE, kind: BASEREL, parent's base rels: hyper] rows=36 cost=100.00..415.34
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..128.79
+	MergeAppend [rel type: HYPERTABLE, kind: BASEREL, parent's base rels: hyper] rows=36 cost=300.02..421.37 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..160.44 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
 
 
              time             | device | temp 
@@ -112,35 +200,39 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;
-DEBUG:  Stage GROUP_AGG in get_foreign_upper_paths:
-RELOPTINFO [OTHER_UPPER_REL] (names: hyper): rows=9 width=20
-	path list:
-	CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.09..129.02
-	Agg [parents: hyper] rows=3 cost=128.88..129.04
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..128.79
-	Agg [parents: hyper] rows=3 cost=100.00..130.47 has pathkeys
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..130.22 has pathkeys
+DEBUG:  Upper rel stage GROUP_AGG:
+RELOPTINFO [rel name: Aggregate on (public.hyper), type: DATA_NODE, kind: OTHER_UPPER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..128.97
+	Agg [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.40 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..128.97
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..130.41 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
 
 
-DEBUG:  Stage GROUP_AGG in get_foreign_upper_paths:
-RELOPTINFO [OTHER_UPPER_REL] (names: hyper): rows=18 width=20
-	path list:
-	CustomScan (DataNodeScanPath) [parents: hyper] rows=18 cost=100.18..158.03
-	Agg [parents: hyper] rows=6 cost=157.96..158.50 has pathkeys
-		Sort [parents: hyper] rows=18 cost=157.96..158.00 has pathkeys
-			CustomScan (DataNodeScanPath) [parents: hyper] rows=18 cost=100.00..157.58
+DEBUG:  Upper rel stage GROUP_AGG:
+RELOPTINFO [rel name: Aggregate on (public.hyper), type: DATA_NODE, kind: OTHER_UPPER_REL, base rel names: hyper] rows=18 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=18 cost=100.14..157.94
+	Agg [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=18 cost=157.96..158.36 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		Sort [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=18 cost=157.96..158.00 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+			CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=18 cost=100.00..157.58
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=18 cost=100.14..157.94
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=18 cost=100.14..160.82 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
 
 
-DEBUG:  Stage GROUP_AGG in get_foreign_upper_paths:
-RELOPTINFO [OTHER_UPPER_REL] (names: hyper): rows=9 width=20
-	path list:
-	CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.09..129.02
-	Agg [parents: hyper] rows=3 cost=128.88..129.04
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..128.79
-	Agg [parents: hyper] rows=3 cost=100.00..130.47 has pathkeys
-		CustomScan (DataNodeScanPath) [parents: hyper] rows=9 cost=100.00..130.22 has pathkeys
+DEBUG:  Upper rel stage GROUP_AGG:
+RELOPTINFO [rel name: Aggregate on (public.hyper), type: DATA_NODE, kind: OTHER_UPPER_REL, base rel names: hyper] rows=9 width=20
+Path list:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..128.97
+	Agg [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.40 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+		CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_MEMBER_REL, parent's base rels: hyper] rows=9 cost=100.00..130.22 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
+Considered paths:
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..128.97
+	CustomScan (DataNodeScanPath) [rel type: DATA_NODE, kind: OTHER_UPPER_REL, parent's base rels: hyper] rows=9 cost=100.07..130.41 with pathkeys: ((hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time, hyper.time), (hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device, hyper.device))
 
 
              time             | device | temp 
@@ -164,7 +256,6 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;
              time             | device | temp 
 ------------------------------+--------+------

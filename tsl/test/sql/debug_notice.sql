@@ -59,7 +59,6 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;
 
 -- Turning off the show_rel (and turning on another flag) should not
@@ -71,7 +70,6 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;
 
 -- Turning off both relations should not show anything.
@@ -82,5 +80,4 @@ SELECT time, device, avg(temp) AS temp
 FROM hyper
 WHERE time BETWEEN '2018-04-19 00:01' AND '2018-06-01 00:00'
 GROUP BY 1, 2
-HAVING avg(temp) > 4
 ORDER BY 1, 2;

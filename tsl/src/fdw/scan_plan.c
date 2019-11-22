@@ -30,6 +30,8 @@
 #include "utils.h"
 #include "deparse.h"
 #include "scan_plan.h"
+#include "debug.h"
+#include "fdw_utils.h"
 
 /*
  * get_useful_pathkeys_for_relation
@@ -103,6 +105,7 @@ fdw_add_paths_with_pathkeys_for_rel(PlannerInfo *root, RelOptInfo *rel, Path *ep
 		Cost total_cost;
 		List *useful_pathkeys = lfirst(lc);
 		Path *sorted_epq_path;
+		Path *scan_path;
 
 		fdw_estimate_path_cost_size(root,
 									rel,
@@ -122,17 +125,18 @@ fdw_add_paths_with_pathkeys_for_rel(PlannerInfo *root, RelOptInfo *rel, Path *ep
 			sorted_epq_path =
 				(Path *) create_sort_path(root, rel, sorted_epq_path, useful_pathkeys, -1.0);
 
-		add_path(rel,
-				 create_scan_path(root,
-								  rel,
-								  NULL,
-								  rows,
-								  startup_cost,
-								  total_cost,
-								  useful_pathkeys,
-								  NULL,
-								  sorted_epq_path,
-								  NIL));
+		scan_path = create_scan_path(root,
+									 rel,
+									 NULL,
+									 rows,
+									 startup_cost,
+									 total_cost,
+									 useful_pathkeys,
+									 NULL,
+									 sorted_epq_path,
+									 NIL);
+
+		fdw_utils_add_path(rel, scan_path);
 	}
 }
 
@@ -598,7 +602,7 @@ add_foreign_grouping_paths(PlannerInfo *root, RelOptInfo *input_rel, RelOptInfo 
 									 NIL); /* no fdw_private */
 
 	/* Add generated path into grouped_rel by add_path(). */
-	add_path(grouped_rel, grouppath);
+	fdw_utils_add_path(grouped_rel, grouppath);
 
 	/* Add paths with pathkeys if there's an order by clause */
 	if (root->sort_pathkeys != NIL)

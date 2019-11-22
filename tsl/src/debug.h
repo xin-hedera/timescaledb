@@ -9,13 +9,12 @@
 #include <nodes/relation.h>
 #include <lib/stringinfo.h>
 #include <utils/guc.h>
+#include "fdw/fdw_utils.h"
+#include "fdw/relinfo.h"
 
 #ifdef TS_DEBUG
-extern const char *upperrel_stage_name[UPPERREL_FINAL + 1];
-extern void tsl_debug_append_rel(StringInfo buf, PlannerInfo *root, RelOptInfo *rel);
-extern void tsl_debug_append_path(StringInfo buf, PlannerInfo *root, Path *path, int indent);
-extern void tsl_debug_append_pathlist(StringInfo buf, PlannerInfo *root, List *pathlist,
-									  int indent);
+extern void tsl_debug_log_rel_with_paths(PlannerInfo *root, RelOptInfo *rel,
+										 UpperRelationKind *upper_stage);
 #endif
 
 #endif /* TIMESCALEDB_DEBUG_H */

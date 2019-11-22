@@ -49,10 +49,6 @@ if (${PG_VERSION_MAJOR} GREATER "9")
   )
 endif ()
 
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-  list(APPEND TEST_FILES ${TEST_FILES_DEBUG})
-endif(CMAKE_BUILD_TYPE MATCHES Debug)
-
 # Regression tests that vary with PostgreSQL version. Generated test
 # files are put in the original source directory since all tests must
 # be in the same directory. These files are updated when the template

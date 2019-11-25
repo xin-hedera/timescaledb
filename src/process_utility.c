@@ -69,6 +69,20 @@
 
 #include "cross_module_fn.h"
 
+/*
+ * PG11 consolidated several ACL_OBJECT_FOO or similar to the already existing
+ * OBJECT_FOO (see
+ * https://github.com/postgres/postgres/commit/2c6f37ed62114bd5a092c20fe721bd11b3bcb91e)
+ * so we can't simply #define OBJECT_TABLESPACE ACL_OBJECT_TABLESPACE and have
+ * things work correctly for previous versions. Instead, we define our own
+ * macro to refer to the correct entity.
+ */
+#if PG11_LT
+#define TS_OBJECT_TABLE ACL_OBJECT_RELATION
+#else
+#define TS_OBJECT_TABLE OBJECT_TABLE
+#endif
+
 void _process_utility_init(void);
 void _process_utility_fini(void);
 
@@ -1087,7 +1101,7 @@ process_grant_and_revoke(ProcessUtilityArgs *args)
 	 * Collect the hypertables in the grant statement. We only need to
 	 * consider those when sending grants to other data nodes.
 	 */
-	if (stmt->objtype == OBJECT_TABLE)
+	if (stmt->objtype == TS_OBJECT_TABLE)
 	{
 		Cache *hcache = ts_hypertable_cache_pin();
 		ListCell *cell;

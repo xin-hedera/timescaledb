@@ -50,7 +50,8 @@ DROP DATABASE bootstrap_test;
 -- Bootstrap the database and check that calling it without
 -- bootstrapping does not find any problems.
 \c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
-SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test', bootstrap => true);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+       	      	            database => 'bootstrap_test', bootstrap => true);
 SELECT * FROM show_data_nodes();
 
 \c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
@@ -90,6 +91,25 @@ SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
        	      	            database => 'bootstrap_test', bootstrap => false);
 
 SELECT * FROM delete_data_node('bootstrap_test');
+DROP DATABASE bootstrap_test;
+
+----------------------------------------------------------------------
+-- Create a database and check that a mismatching encoding is caught
+-- when bootstrapping (since it will skip creating the database).
+\c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
+
+CREATE DATABASE bootstrap_test
+   ENCODING SQL_ASCII
+ LC_COLLATE 'C'
+   LC_CTYPE 'C'
+   TEMPLATE template0
+      OWNER :ROLE_CLUSTER_SUPERUSER;
+
+\set ON_ERROR_STOP 0
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+       	      	            database => 'bootstrap_test', bootstrap => true);
+\set ON_ERROR_STOP 1
+
 DROP DATABASE bootstrap_test;
 
 ----------------------------------------------------------------------
@@ -164,13 +184,15 @@ DROP DATABASE bootstrap_test;
 -- Bootstrap the database and remove it. Check that the missing
 -- database is caught when adding the node and not bootstrapping.
 \c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
-SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test', bootstrap => true);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', bootstrap => true);
 SELECT * FROM show_data_nodes();
 SELECT * FROM delete_data_node('bootstrap_test');
 DROP DATABASE bootstrap_test;
 
 \set ON_ERROR_STOP 0
-SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test', bootstrap => false);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', bootstrap => false);
 \set ON_ERROR_STOP 1
 
 -----------------------------------------------------------------------
@@ -179,7 +201,8 @@ SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => '
 -- Check that adding the data node and not bootstrapping will fail
 -- indicating that the extension is missing.
 \c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
-SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test', bootstrap => true);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', bootstrap => true);
 SELECT * FROM delete_data_node('bootstrap_test');
 \c bootstrap_test :ROLE_SUPERUSER;
 SELECT extname FROM pg_extension WHERE extname = 'timescaledb';
@@ -188,7 +211,8 @@ SELECT extname FROM pg_extension WHERE extname = 'timescaledb';
 
 \set ON_ERROR_STOP 0
 \c :TEST_DBNAME :ROLE_CLUSTER_SUPERUSER;
-SELECT * FROM add_data_node('bootstrap_test', host => 'localhost', database => 'bootstrap_test', bootstrap => false);
+SELECT * FROM add_data_node('bootstrap_test', host => 'localhost',
+                            database => 'bootstrap_test', bootstrap => false);
 \set ON_ERROR_STOP 1
 
 DROP DATABASE bootstrap_test;

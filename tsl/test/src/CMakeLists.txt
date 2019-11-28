@@ -8,6 +8,7 @@ set(SOURCES
 
 if (NOT ${PG_VERSION} VERSION_LESS "11")
   list(APPEND SOURCES
+       test_dist_util.c
        data_node.c
        deparse.c)
 endif ()

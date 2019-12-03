@@ -159,7 +159,7 @@ static void deparseReturningList(StringInfo buf, RangeTblEntry *rte, Index rtind
 								 bool trig_after_row, List *returningList, List **retrieved_attrs);
 static void deparseColumnRef(StringInfo buf, int varno, int varattno, RangeTblEntry *rte,
 							 bool qualify_col);
-static void deparseRelation(StringInfo buf, Relation rel, bool qualify);
+static void deparseRelation(StringInfo buf, Relation rel);
 static void deparseExpr(Expr *expr, deparse_expr_cxt *context);
 static void deparseVar(Var *node, deparse_expr_cxt *context);
 static void deparseConst(Const *node, deparse_expr_cxt *context, int showtype);
@@ -1129,12 +1129,15 @@ append_chunk_exclusion_condition(deparse_expr_cxt *context, bool use_alias)
 		appendStringInfo(buf, "%s%d, ", REL_ALIAS_PREFIX, scanrel->relid);
 	else
 	{
-		/* if no alias, use a non-qualfied relation name */
+		/* use a qualfied relation name */
 		RangeTblEntry *rte = planner_rt_fetch(scanrel->relid, context->root);
 		Relation rel = heap_open(rte->relid, NoLock);
-		deparseRelation(buf, rel, false);
+		deparseRelation(buf, rel);
 		heap_close(rel, NoLock);
-		appendStringInfo(buf, ", ");
+		/* We explicitly append expand operator `.*` to prevent
+		 * confusing parser when using qualified name (otherwise parser believes that schema name is
+		 * relation name) */
+		appendStringInfoString(buf, ".*, ");
 	}
 
 	appendStringInfo(buf, "ARRAY[");
@@ -1296,7 +1299,7 @@ deparseFromExprForRel(StringInfo buf, PlannerInfo *root, RelOptInfo *foreignrel,
 		 */
 		Relation rel = heap_open(rte->relid, NoLock);
 
-		deparseRelation(buf, rel, true);
+		deparseRelation(buf, rel);
 
 		/*
 		 * Add a unique alias to avoid any conflict in relation names due to
@@ -1329,7 +1332,7 @@ deparse_insert_stmt(DeparsedInsertStmt *stmt, RangeTblEntry *rte, Index rtindex,
 	initStringInfo(&buf);
 
 	appendStringInfoString(&buf, "INSERT INTO ");
-	deparseRelation(&buf, rel, true);
+	deparseRelation(&buf, rel);
 
 	stmt->target = buf.data;
 	stmt->num_target_attrs = list_length(target_attrs);
@@ -1544,7 +1547,7 @@ deparseUpdateSql(StringInfo buf, RangeTblEntry *rte, Index rtindex, Relation rel
 	ListCell *lc;
 
 	appendStringInfoString(buf, "UPDATE ");
-	deparseRelation(buf, rel, true);
+	deparseRelation(buf, rel);
 	appendStringInfoString(buf, " SET ");
 
 	pindex = 2; /* ctid is always the first param */
@@ -1584,7 +1587,7 @@ deparseDeleteSql(StringInfo buf, RangeTblEntry *rte, Index rtindex, Relation rel
 				 List *returningList, List **retrieved_attrs)
 {
 	appendStringInfoString(buf, "DELETE FROM ");
-	deparseRelation(buf, rel, true);
+	deparseRelation(buf, rel);
 	appendStringInfoString(buf, " WHERE ctid = $1");
 
 	deparseReturningList(buf,
@@ -1646,7 +1649,7 @@ deparseAnalyzeSizeSql(StringInfo buf, Relation rel)
 
 	/* We'll need the remote relation name as a literal. */
 	initStringInfo(&relname);
-	deparseRelation(&relname, rel, true);
+	deparseRelation(&relname, rel);
 
 	appendStringInfoString(buf, "SELECT pg_catalog.pg_relation_size(");
 	deparseStringLiteral(buf, relname.data);
@@ -1711,7 +1714,7 @@ deparseAnalyzeSql(StringInfo buf, Relation rel, List **retrieved_attrs)
 	 * Construct FROM clause
 	 */
 	appendStringInfoString(buf, " FROM ");
-	deparseRelation(buf, rel, true);
+	deparseRelation(buf, rel);
 }
 
 /*
@@ -1852,7 +1855,7 @@ deparseColumnRef(StringInfo buf, int varno, int varattno, RangeTblEntry *rte, bo
  * Note, we enforce that table names are the same across nodes.
  */
 static void
-deparseRelation(StringInfo buf, Relation rel, bool qualify)
+deparseRelation(StringInfo buf, Relation rel)
 {
 	const char *nspname;
 	const char *relname;
@@ -1863,10 +1866,7 @@ deparseRelation(StringInfo buf, Relation rel, bool qualify)
 	nspname = get_namespace_name(RelationGetNamespace(rel));
 	relname = RelationGetRelationName(rel);
 
-	if (qualify)
-		appendStringInfo(buf, "%s.%s", quote_identifier(nspname), quote_identifier(relname));
-	else
-		appendStringInfoString(buf, quote_identifier(relname));
+	appendStringInfo(buf, "%s.%s", quote_identifier(nspname), quote_identifier(relname));
 }
 
 /*

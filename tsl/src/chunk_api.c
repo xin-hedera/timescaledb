@@ -624,6 +624,65 @@ fetch_remote_chunk_relstats(Hypertable *ht, FunctionCallInfo fcinfo)
 	ts_dist_cmd_close_response(cmdres);
 }
 
+#define GET_CHUNK_RELSTATS_NAME "get_chunk_relstats"
+
+/*
+ * Fetch and locally update a distributed hypertable stats
+ * by table id.
+ *
+ * This function reconstructs fcinfo argument of the
+ * chunk_api_get_chunk_relstats() function in order to call
+ * fetch_remote_chunk_relstats() and execute
+ * _timescaledb_internal.get_chunk_relstats() remotely.
+ */
+static void
+chunk_api_update_distributed_hypertable_relstats(Oid table_id)
+{
+	Cache *hcache;
+	Hypertable *ht;
+	FunctionCallInfoData fcinfo;
+	FmgrInfo flinfo;
+	Oid funcoid;
+	Oid get_chunk_relstats_argtypes[1] = { REGCLASSOID };
+
+	hcache = ts_hypertable_cache_pin();
+	ht = ts_hypertable_cache_get_entry(hcache, table_id);
+
+	if (ht == NULL)
+		ereport(ERROR,
+				(errcode(ERRCODE_TS_HYPERTABLE_NOT_EXIST),
+				 errmsg("table \"%s\" is not a hypertable", get_rel_name(table_id))));
+
+	if (!hypertable_is_distributed(ht))
+		ereport(ERROR,
+				(errcode(ERRCODE_TS_HYPERTABLE_NOT_DISTRIBUTED),
+				 errmsg("hypertable \"%s\" is not distributed", get_rel_name(table_id))));
+
+	/* Prepare fcinfo context for remote execution of _timescaledb_internal.get_chunk_relstats() */
+	funcoid = ts_get_function_oid(GET_CHUNK_RELSTATS_NAME,
+								  INTERNAL_SCHEMA_NAME,
+								  1,
+								  get_chunk_relstats_argtypes);
+	fmgr_info_cxt(funcoid, &flinfo, CurrentMemoryContext);
+	InitFunctionCallInfoData(fcinfo, &flinfo, 1, InvalidOid, NULL, NULL);
+	fcinfo.arg[0] = ObjectIdGetDatum(table_id);
+
+	fetch_remote_chunk_relstats(ht, &fcinfo);
+
+	CommandCounterIncrement();
+
+	ts_cache_release(hcache);
+}
+
+void
+chunk_api_update_distributed_hypertable_stats(Oid table_id)
+{
+	/* Update relation stats for hypertable */
+	chunk_api_update_distributed_hypertable_relstats(table_id);
+
+	/* todo: colstats */
+}
+
 /*
  * Get relation stats for chunks.
  *

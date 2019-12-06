@@ -82,7 +82,6 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     hypertable_distributed.sql
     ddl_distributed.sql
     dist_partial_agg.sql
-    partitionwise_distributed.sql
     remote_txn_resolve.sql
     remote_stmt_params.sql
     remote_copy.sql
@@ -103,4 +102,3 @@ foreach(TEST_FILE ${TEST_FILES})
   string(REGEX REPLACE "(.+)\.sql" "\\1" TESTS_TO_RUN ${TEST_FILE})
   file(APPEND ${TEST_SCHEDULE} "test: ${TESTS_TO_RUN}\n")
 endforeach(TEST_FILE)
-

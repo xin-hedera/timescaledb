@@ -65,6 +65,9 @@ chunk_dispatch_exec(CustomScanState *node)
 		MemoryContext old;
 		bool cis_changed;
 
+		/* Reset the per-tuple exprcontext */
+		ResetPerTupleExprContext(estate);
+
 		/* Switch to the executor's per-tuple memory context */
 		old = MemoryContextSwitchTo(GetPerTupleMemoryContext(estate));
 

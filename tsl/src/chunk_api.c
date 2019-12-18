@@ -664,8 +664,10 @@ chunk_api_update_distributed_hypertable_relstats(Oid table_id)
 								  1,
 								  get_chunk_relstats_argtypes);
 	fmgr_info_cxt(funcoid, &flinfo, CurrentMemoryContext);
+	memset(&fcinfo, 0, sizeof(fcinfo));
 	InitFunctionCallInfoData(fcinfo, &flinfo, 1, InvalidOid, NULL, NULL);
 	fcinfo.arg[0] = ObjectIdGetDatum(table_id);
+	fcinfo.argnull[0] = false;
 
 	fetch_remote_chunk_relstats(ht, &fcinfo);
 

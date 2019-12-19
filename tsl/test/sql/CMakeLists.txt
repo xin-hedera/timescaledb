@@ -88,6 +88,7 @@ if (NOT ${PG_VERSION} VERSION_LESS "11")
     dist_util.sql
     telemetry_distributed.sql
     data_fetcher.sql
+    issues.sql
   )
 endif ()
 

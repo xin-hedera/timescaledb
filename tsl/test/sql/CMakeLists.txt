@@ -127,6 +127,7 @@ set(SOLO_TESTS
   move-11
   move-12
   move-13
+  move-14
   remote_connection_cache
   remote_copy
   remote_txn
@@ -134,6 +135,7 @@ set(SOLO_TESTS
   reorder-11
   reorder-12
   reorder-13
+  reorder-14
   telemetry_distributed
 )
 

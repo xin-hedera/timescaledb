@@ -2579,11 +2579,14 @@ process_cluster_start(ProcessUtilityArgs *args)
 			 */
 			cluster_rel(cim->chunkoid,
 						cim->indexoid,
-#if PG12_LT
+#if PG11
 						true,
 						stmt->verbose
-#else
+#elif PG14_LT
 						stmt->options
+#else
+						stmt->options,
+						args->context == PROCESS_UTILITY_TOPLEVEL
 #endif
 			);
 			PopActiveSnapshot();

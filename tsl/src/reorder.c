@@ -659,6 +659,9 @@ copy_heap_data(Oid OIDNewHeap, Oid OIDOldHeap, Oid OIDOldIndex, bool verbose,
 						  0,
 						  0,
 						  0,
+#if PG14_GE
+						  true,
+#endif
 						  &OldestXmin,
 						  &FreezeXid,
 						  NULL,

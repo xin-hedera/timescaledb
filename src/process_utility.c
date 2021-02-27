@@ -1451,7 +1451,7 @@ reindex_chunk(Hypertable *ht, Oid chunk_relid, void *arg)
 			stmt->relation->schemaname = NameStr(chunk->fd.schema_name);
 			ReindexTable(stmt->relation,
 						 stmt->options
-#if PG12_GE
+#if PG12 || PG13
 						 ,
 						 stmt->concurrent /* should test for deadlocks */
 #endif

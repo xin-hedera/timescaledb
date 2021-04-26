@@ -4,6 +4,7 @@ set(TEST_FILES_SHARED
   dist_gapfill.sql
   dist_insert.sql
   dist_distinct.sql
+  chunk_move_copy.sql
 )
 
 set(TEST_TEMPLATES_SHARED

@@ -25,3 +25,10 @@ CREATE OR REPLACE FUNCTION _timescaledb_internal.refresh_continuous_aggregate(
     continuous_aggregate     REGCLASS,
     hypertable_chunk         REGCLASS
 ) RETURNS VOID AS '@MODULE_PATHNAME@', 'ts_continuous_agg_refresh_chunk' LANGUAGE C VOLATILE;
+
+-- Drop the specified chunk replica on the specified data node
+CREATE OR REPLACE FUNCTION  _timescaledb_internal.drop_chunk_replica(
+    node_name               NAME,
+    chunk                   REGCLASS
+) RETURNS VOID
+AS '@MODULE_PATHNAME@', 'ts_drop_chunk_replica' LANGUAGE C VOLATILE;

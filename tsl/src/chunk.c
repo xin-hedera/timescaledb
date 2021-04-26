@@ -13,6 +13,7 @@
 #include <access/htup_details.h>
 #include <access/xact.h>
 #include <nodes/makefuncs.h>
+#include <utils/builtins.h>
 #include <utils/syscache.h>
 #include <utils/inval.h>
 #include <utils/tuplestore.h>
@@ -258,4 +259,93 @@ chunk_invoke_drop_chunks(Oid relid, Datum older_than, Datum older_than_type)
 	FreeExecutorState(estate);
 
 	return num_results;
+}
+
+/*
+ * drop_chunk_replica:
+ *
+ * This function drops a chunk on a specified data node. It then
+ * removes the metadata about the association of the chunk to this
+ * datanode on the access node.
+ */
+Datum
+drop_chunk_replica(PG_FUNCTION_ARGS)
+{
+	const char *node_name = PG_ARGISNULL(0) ? NULL : NameStr(*PG_GETARG_NAME(0));
+	Oid chunk_relid = PG_ARGISNULL(1) ? InvalidOid : PG_GETARG_OID(1);
+	List *data_nodes, *replicas;
+	ForeignServer *server;
+	Chunk *chunk;
+	ChunkDataNode *cdn;
+	char *drop_cmd;
+
+	if (!OidIsValid(chunk_relid))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("Invalid chunk specification %u", chunk_relid)));
+
+	chunk = ts_chunk_get_by_relid(chunk_relid, false);
+
+	if (NULL == chunk)
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE), errmsg("Invalid chunk specified")));
+
+	/* It has to be a foreign table chunk */
+	if (chunk->relkind != RELKIND_FOREIGN_TABLE)
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("\"%s\" is not a valid remote chunk", get_rel_name(chunk_relid))));
+
+	server = data_node_get_foreign_server(node_name, ACL_USAGE, true, false);
+	Assert(NULL != server);
+
+	/* Early abort on missing permissions */
+	ts_hypertable_permissions_check(chunk_relid, GetUserId());
+
+	/* check that the chunk is indeed present on the specified data node */
+	cdn = ts_chunk_data_node_scan_by_chunk_id_and_node_name(chunk->fd.id,
+															server->servername,
+															CurrentMemoryContext);
+
+	if (!cdn)
+		ereport(ERROR,
+				(errcode(ERRCODE_UNDEFINED_OBJECT),
+				 errmsg("Chunk \"%s\" does not exist on data node \"%s\"",
+						get_rel_name(chunk_relid),
+						node_name)));
+
+	/* Ensure that this chunk remains replicated so as to avoid data loss */
+	replicas = ts_chunk_data_node_scan_by_chunk_id(chunk->fd.id, CurrentMemoryContext);
+
+	/*
+	 * There should be atleast one surviving replica after the deletion here.
+	 *
+	 * We could fetch the corresponding hypertable and check its
+	 * replication_factor. But the user of this function is using it
+	 * to move chunk from one datanode to another and is well aware of
+	 * the replication_factor requirements
+	 */
+	if (list_length(replicas) <= 1)
+		ereport(ERROR,
+				(errcode(ERRCODE_TS_INSUFFICIENT_NUM_DATA_NODES),
+				 errmsg("dropping last chunk could lead to data loss")));
+
+	/*
+	 * Drop chunk on the data node using a regular "DROP TABLE". CASCADE is
+	 * not required and compressed chunk (if any) should also get dropped.
+	 */
+	drop_cmd = psprintf("DROP TABLE %s.%s",
+						quote_identifier(chunk->fd.schema_name.data),
+						quote_identifier(chunk->fd.table_name.data));
+	data_nodes = list_make1((char *) node_name);
+	ts_dist_cmd_invoke_on_data_nodes(drop_cmd, data_nodes, true);
+
+	/*
+	 * This chunk might have this datanode as primary, remove that association
+	 * if so. Then delete the chunk_id and node_name association.
+	 */
+	chunk_update_foreign_server_if_needed(chunk->fd.id, server->serverid);
+	ts_chunk_data_node_delete_by_chunk_id_and_node_name(chunk->fd.id, node_name);
+
+	PG_RETURN_VOID();
 }

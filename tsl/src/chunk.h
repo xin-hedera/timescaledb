@@ -13,6 +13,7 @@
 
 extern void chunk_update_foreign_server_if_needed(int32 chunk_id, Oid existing_server_id);
 extern Datum chunk_set_default_data_node(PG_FUNCTION_ARGS);
+extern Datum drop_chunk_replica(PG_FUNCTION_ARGS);
 extern int chunk_invoke_drop_chunks(Oid relid, Datum older_than, Datum older_than_type);
 
 #endif /* TIMESCALEDB_TSL_CHUNK_H */
